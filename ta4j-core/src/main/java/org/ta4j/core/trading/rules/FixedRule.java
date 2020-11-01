@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -28,7 +29,7 @@ import java.util.Arrays;
 
 /**
  * An indexes-based rule.
- * <p>
+ *
  * Satisfied for provided indexes.
  */
 public class FixedRule extends AbstractRule {
@@ -37,6 +38,7 @@ public class FixedRule extends AbstractRule {
 
     /**
      * Constructor.
+     * 
      * @param indexes a sequence of indexes
      */
     public FixedRule(int... indexes) {
@@ -46,8 +48,8 @@ public class FixedRule extends AbstractRule {
     @Override
     public boolean isSatisfied(int index, TradingRecord tradingRecord) {
         boolean satisfied = false;
-        for (int i = 0; i < indexes.length; i++) {
-            if (indexes[i] == index) {
+        for (int idx : indexes) {
+            if (idx == index) {
                 satisfied = true;
                 break;
             }

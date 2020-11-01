@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,47 +23,49 @@
  */
 package org.ta4j.core.indicators;
 
-import org.ta4j.core.Decimal;
-import org.ta4j.core.TimeSeries;
-import org.ta4j.core.indicators.helpers.AverageTrueRangeIndicator;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.indicators.helpers.LowPriceIndicator;
 import org.ta4j.core.indicators.helpers.LowestValueIndicator;
-import org.ta4j.core.indicators.helpers.MinPriceIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * The Chandelier Exit (short) Indicator.
- * @see http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:chandelier_exit
+ *
+ * @see <a href=
+ *      "http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:chandelier_exit">
+ *      http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:chandelier_exit</a>
  */
-public class ChandelierExitShortIndicator extends CachedIndicator<Decimal> {
+public class ChandelierExitShortIndicator extends CachedIndicator<Num> {
 
     private final LowestValueIndicator low;
-    
-    private final AverageTrueRangeIndicator atr;
-    
-    private final Decimal k;
+    private final ATRIndicator atr;
+    private final Num k;
 
     /**
      * Constructor.
-     * @param series the time series
+     *
+     * @param series the bar series
      */
-    public ChandelierExitShortIndicator(TimeSeries series) {
-        this(series, 22, Decimal.THREE);
+    public ChandelierExitShortIndicator(BarSeries series) {
+        this(series, 22, 3d);
     }
-    
+
     /**
      * Constructor.
-     * @param series the time series
-     * @param timeFrame the time frame (usually 22)
-     * @param k the K multiplier for ATR (usually 3.0)
+     *
+     * @param series   the bar series
+     * @param barCount the time frame (usually 22)
+     * @param k        the K multiplier for ATR (usually 3.0)
      */
-    public ChandelierExitShortIndicator(TimeSeries series, int timeFrame, Decimal k) {
+    public ChandelierExitShortIndicator(BarSeries series, int barCount, double k) {
         super(series);
-        low = new LowestValueIndicator(new MinPriceIndicator(series), timeFrame);
-        atr = new AverageTrueRangeIndicator(series, timeFrame);
-        this.k = k;
+        low = new LowestValueIndicator(new LowPriceIndicator(series), barCount);
+        atr = new ATRIndicator(series, barCount);
+        this.k = numOf(k);
     }
 
     @Override
-    protected Decimal calculate(int index) {
+    protected Num calculate(int index) {
         return low.getValue(index).plus(atr.getValue(index).multipliedBy(k));
     }
 }

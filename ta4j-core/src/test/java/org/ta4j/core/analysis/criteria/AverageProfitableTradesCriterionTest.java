@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,40 +25,54 @@ package org.ta4j.core.analysis.criteria;
 
 import org.junit.Test;
 import org.ta4j.core.*;
-import org.ta4j.core.mocks.MockTimeSeries;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.mocks.MockBarSeries;
+import org.ta4j.core.num.Num;
 
-import static org.junit.Assert.*;
-public class AverageProfitableTradesCriterionTest {
+import java.util.function.Function;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.ta4j.core.TestUtils.assertNumEquals;
+
+public class AverageProfitableTradesCriterionTest extends AbstractCriterionTest {
+
+    public AverageProfitableTradesCriterionTest(Function<Number, Num> numFunction) {
+        super((params) -> new AverageProfitableTradesCriterion(), numFunction);
+    }
 
     @Test
     public void calculate() {
-        TimeSeries series = new MockTimeSeries(100d, 95d, 102d, 105d, 97d, 113d);
-        TradingRecord tradingRecord = new BaseTradingRecord(
-                Order.buyAt(0), Order.sellAt(1),
-                Order.buyAt(2), Order.sellAt(3),
-                Order.buyAt(4), Order.sellAt(5));
-        
-        AverageProfitableTradesCriterion average = new AverageProfitableTradesCriterion();
-        
-        assertEquals(2d/3, average.calculate(series, tradingRecord), TATestsUtils.TA_OFFSET);
+        BarSeries series = new MockBarSeries(numFunction, 100d, 95d, 102d, 105d, 97d, 113d);
+        TradingRecord tradingRecord = new BaseTradingRecord(Order.buyAt(0, series), Order.sellAt(1, series),
+                Order.buyAt(2, series), Order.sellAt(3, series), Order.buyAt(4, series), Order.sellAt(5, series));
+
+        AnalysisCriterion average = getCriterion();
+
+        assertNumEquals(2d / 3, average.calculate(series, tradingRecord));
     }
 
     @Test
     public void calculateWithOneTrade() {
-        TimeSeries series = new MockTimeSeries(100d, 95d, 102d, 105d, 97d, 113d);
-        Trade trade = new Trade(Order.buyAt(0), Order.sellAt(1));
-            
-        AverageProfitableTradesCriterion average = new AverageProfitableTradesCriterion();
-        assertEquals(0d, average.calculate(series, trade), TATestsUtils.TA_OFFSET);
-        
-        trade = new Trade(Order.buyAt(1), Order.sellAt(2));
-        assertEquals(1d, average.calculate(series, trade), TATestsUtils.TA_OFFSET);
+        BarSeries series = new MockBarSeries(numFunction, 100d, 95d, 102d, 105d, 97d, 113d);
+        Trade trade = new Trade(Order.buyAt(0, series), Order.sellAt(1, series));
+
+        AnalysisCriterion average = getCriterion();
+        assertNumEquals(numOf(0), average.calculate(series, trade));
+
+        trade = new Trade(Order.buyAt(1, series), Order.sellAt(2, series));
+        assertNumEquals(1, average.calculate(series, trade));
     }
 
     @Test
     public void betterThan() {
-        AnalysisCriterion criterion = new AverageProfitableTradesCriterion();
-        assertTrue(criterion.betterThan(12, 8));
-        assertFalse(criterion.betterThan(8, 12));
+        AnalysisCriterion criterion = getCriterion();
+        assertTrue(criterion.betterThan(numOf(12), numOf(8)));
+        assertFalse(criterion.betterThan(numOf(8), numOf(12)));
+    }
+
+    @Test
+    public void testCalculateOneOpenTradeShouldReturnZero() {
+        openedTradeUtils.testCalculateOneOpenTradeShouldReturnExpectedValue(numFunction, getCriterion(), 0);
     }
 }

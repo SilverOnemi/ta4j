@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,118 +23,122 @@
  */
 package org.ta4j.core.indicators.pivotpoints;
 
-import org.ta4j.core.Decimal;
-import org.ta4j.core.Tick;
+import org.ta4j.core.Bar;
 import org.ta4j.core.indicators.RecursiveCachedIndicator;
+import org.ta4j.core.num.Num;
 
 import java.util.List;
 
+import static org.ta4j.core.num.NaN.NaN;
+
 /**
  * Pivot Reversal Indicator.
- * <p>
- * @author team172011(Simon-Justus Wimmer), 11.10.2017
- * @see <a href="http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:pivot_points">chart_school: pivotpoints</a>
+ *
+ * @see <a href=
+ *      "http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:pivot_points">
+ *      http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:pivot_points</a>
  */
-public class StandardReversalIndicator extends RecursiveCachedIndicator<Decimal> {
+public class StandardReversalIndicator extends RecursiveCachedIndicator<Num> {
 
     private final PivotPointIndicator pivotPointIndicator;
     private final PivotLevel level;
 
     /**
      * Constructor.
-     * <p>
+     *
      * Calculates the (standard) reversal for the corresponding pivot level
+     *
      * @param pivotPointIndicator the {@link PivotPointIndicator} for this reversal
-     * @param level the {@link PivotLevel} for this reversal
+     * @param level               the {@link PivotLevel} for this reversal
      */
     public StandardReversalIndicator(PivotPointIndicator pivotPointIndicator, PivotLevel level) {
         super(pivotPointIndicator);
         this.pivotPointIndicator = pivotPointIndicator;
-        this.level =level;
+        this.level = level;
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        List<Integer> ticksOfPreviousPeriod = pivotPointIndicator.getTicksOfPreviousPeriod(index);
-        if (ticksOfPreviousPeriod.isEmpty()) {
-            return Decimal.NaN;
+    protected Num calculate(int index) {
+        List<Integer> barsOfPreviousPeriod = pivotPointIndicator.getBarsOfPreviousPeriod(index);
+        if (barsOfPreviousPeriod.isEmpty()) {
+            return NaN;
         }
-        switch (level){
-            case RESISTANCE_3:
-                return calculateR3(ticksOfPreviousPeriod, index);
-            case RESISTANCE_2:
-                return calculateR2(ticksOfPreviousPeriod, index);
-            case RESISTANCE_1:
-                return calculateR1(ticksOfPreviousPeriod, index);
-            case SUPPORT_1:
-                return  calculateS1(ticksOfPreviousPeriod, index);
-            case SUPPORT_2:
-                return calculateS2(ticksOfPreviousPeriod, index);
-            case SUPPORT_3:
-                return calculateS3(ticksOfPreviousPeriod, index);
-            default:
-                return Decimal.NaN;
+        switch (level) {
+        case RESISTANCE_3:
+            return calculateR3(barsOfPreviousPeriod, index);
+        case RESISTANCE_2:
+            return calculateR2(barsOfPreviousPeriod, index);
+        case RESISTANCE_1:
+            return calculateR1(barsOfPreviousPeriod, index);
+        case SUPPORT_1:
+            return calculateS1(barsOfPreviousPeriod, index);
+        case SUPPORT_2:
+            return calculateS2(barsOfPreviousPeriod, index);
+        case SUPPORT_3:
+            return calculateS3(barsOfPreviousPeriod, index);
+        default:
+            return NaN;
         }
 
     }
 
-    private Decimal calculateR3(List<Integer> ticksOfPreviousPeriod, int index){
-        Tick tick = getTimeSeries().getTick(ticksOfPreviousPeriod.get(0));
-        Decimal low = tick.getMinPrice();
-        Decimal high =  tick.getMaxPrice();
-        for(int i: ticksOfPreviousPeriod){
-            low = (getTimeSeries().getTick(i).getMinPrice()).min(low);
-            high = (getTimeSeries().getTick(i).getMaxPrice()).max(high);
+    private Num calculateR3(List<Integer> barsOfPreviousPeriod, int index) {
+        Bar bar = getBarSeries().getBar(barsOfPreviousPeriod.get(0));
+        Num low = bar.getLowPrice();
+        Num high = bar.getHighPrice();
+        for (int i : barsOfPreviousPeriod) {
+            low = (getBarSeries().getBar(i).getLowPrice()).min(low);
+            high = (getBarSeries().getBar(i).getHighPrice()).max(high);
         }
-        return high.plus(Decimal.TWO.multipliedBy((pivotPointIndicator.getValue(index).minus(low))));
+        return high.plus(numOf(2).multipliedBy((pivotPointIndicator.getValue(index).minus(low))));
     }
 
-    private Decimal calculateR2(List<Integer> ticksOfPreviousPeriod, int index){
-        Tick tick = getTimeSeries().getTick(ticksOfPreviousPeriod.get(0));
-        Decimal low = tick.getMinPrice();
-        Decimal high = tick.getMaxPrice();
-        for(int i: ticksOfPreviousPeriod){
-            low = (getTimeSeries().getTick(i).getMinPrice()).min(low);
-            high = (getTimeSeries().getTick(i).getMaxPrice()).max(high);
+    private Num calculateR2(List<Integer> barsOfPreviousPeriod, int index) {
+        Bar bar = getBarSeries().getBar(barsOfPreviousPeriod.get(0));
+        Num low = bar.getLowPrice();
+        Num high = bar.getHighPrice();
+        for (int i : barsOfPreviousPeriod) {
+            low = (getBarSeries().getBar(i).getLowPrice()).min(low);
+            high = (getBarSeries().getBar(i).getHighPrice()).max(high);
         }
         return pivotPointIndicator.getValue(index).plus((high.minus(low)));
     }
 
-    private Decimal calculateR1(List<Integer> ticksOfPreviousPeriod, int index){
-        Decimal low = getTimeSeries().getTick(ticksOfPreviousPeriod.get(0)).getMinPrice();
-        for(int i: ticksOfPreviousPeriod){
-            low = (getTimeSeries().getTick(i).getMinPrice()).min(low);
+    private Num calculateR1(List<Integer> barsOfPreviousPeriod, int index) {
+        Num low = getBarSeries().getBar(barsOfPreviousPeriod.get(0)).getLowPrice();
+        for (int i : barsOfPreviousPeriod) {
+            low = (getBarSeries().getBar(i).getLowPrice()).min(low);
         }
-        return Decimal.TWO.multipliedBy(pivotPointIndicator.getValue(index)).minus(low);
+        return numOf(2).multipliedBy(pivotPointIndicator.getValue(index)).minus(low);
     }
 
-    private Decimal calculateS1(List<Integer> ticksOfPreviousPeriod, int index){
-        Decimal high =  getTimeSeries().getTick(ticksOfPreviousPeriod.get(0)).getMaxPrice();
-        for(int i: ticksOfPreviousPeriod){
-            high = (getTimeSeries().getTick(i).getMaxPrice()).max(high);
+    private Num calculateS1(List<Integer> barsOfPreviousPeriod, int index) {
+        Num high = getBarSeries().getBar(barsOfPreviousPeriod.get(0)).getHighPrice();
+        for (int i : barsOfPreviousPeriod) {
+            high = (getBarSeries().getBar(i).getHighPrice()).max(high);
         }
-        return Decimal.TWO.multipliedBy(pivotPointIndicator.getValue(index)).minus(high);
+        return numOf(2).multipliedBy(pivotPointIndicator.getValue(index)).minus(high);
     }
 
-    private Decimal calculateS2(List<Integer> ticksOfPreviousPeriod, int index){
-        Tick tick = getTimeSeries().getTick(ticksOfPreviousPeriod.get(0));
-        Decimal high =  tick.getMaxPrice();
-        Decimal low = tick.getMinPrice();
-        for(int i: ticksOfPreviousPeriod){
-            high = (getTimeSeries().getTick(i).getMaxPrice()).max(high);
-            low = (getTimeSeries().getTick(i).getMinPrice()).min(low);
+    private Num calculateS2(List<Integer> barsOfPreviousPeriod, int index) {
+        Bar bar = getBarSeries().getBar(barsOfPreviousPeriod.get(0));
+        Num high = bar.getHighPrice();
+        Num low = bar.getLowPrice();
+        for (int i : barsOfPreviousPeriod) {
+            high = (getBarSeries().getBar(i).getHighPrice()).max(high);
+            low = (getBarSeries().getBar(i).getLowPrice()).min(low);
         }
         return pivotPointIndicator.getValue(index).minus((high.minus(low)));
     }
 
-    private Decimal calculateS3(List<Integer> ticksOfPreviousPeriod, int index){
-        Tick tick = getTimeSeries().getTick(ticksOfPreviousPeriod.get(0));
-        Decimal high =  tick.getMaxPrice();
-        Decimal low = tick.getMinPrice();
-        for(int i: ticksOfPreviousPeriod){
-            high = (getTimeSeries().getTick(i).getMaxPrice()).max(high);
-            low = (getTimeSeries().getTick(i).getMinPrice()).min(low);
+    private Num calculateS3(List<Integer> barsOfPreviousPeriod, int index) {
+        Bar bar = getBarSeries().getBar(barsOfPreviousPeriod.get(0));
+        Num high = bar.getHighPrice();
+        Num low = bar.getLowPrice();
+        for (int i : barsOfPreviousPeriod) {
+            high = (getBarSeries().getBar(i).getHighPrice()).max(high);
+            low = (getBarSeries().getBar(i).getLowPrice()).min(low);
         }
-        return low.minus(Decimal.TWO.multipliedBy((high.minus(pivotPointIndicator.getValue(index)))));
+        return low.minus(numOf(2).multipliedBy((high.minus(pivotPointIndicator.getValue(index)))));
     }
 }

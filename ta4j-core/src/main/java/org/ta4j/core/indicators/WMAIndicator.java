@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,49 +23,49 @@
  */
 package org.ta4j.core.indicators;
 
-import org.ta4j.core.Decimal;
 import org.ta4j.core.Indicator;
+import org.ta4j.core.num.Num;
 
 /**
  * WMA indicator.
- * <p>
+ *
  */
-public class WMAIndicator extends CachedIndicator<Decimal> {
+public class WMAIndicator extends CachedIndicator<Num> {
 
-    private int timeFrame;
+    private static final long serialVersionUID = -1610206345404758687L;
+    private final int barCount;
+    private final Indicator<Num> indicator;
 
-    private Indicator<Decimal> indicator;
-
-    public WMAIndicator(Indicator<Decimal> indicator, int timeFrame) {
+    public WMAIndicator(Indicator<Num> indicator, int barCount) {
         super(indicator);
         this.indicator = indicator;
-        this.timeFrame = timeFrame;
+        this.barCount = barCount;
     }
 
     @Override
-    protected Decimal calculate(int index) {
+    protected Num calculate(int index) {
         if (index == 0) {
             return indicator.getValue(0);
         }
-        Decimal value = Decimal.ZERO;
-        if(index - timeFrame < 0) {
-            
-            for(int i = index + 1; i > 0; i--) {
-                value = value.plus(Decimal.valueOf(i).multipliedBy(indicator.getValue(i-1)));
+        Num value = numOf(0);
+        if (index - barCount < 0) {
+
+            for (int i = index + 1; i > 0; i--) {
+                value = value.plus(numOf(i).multipliedBy(indicator.getValue(i - 1)));
             }
-            return value.dividedBy(Decimal.valueOf(((index + 1) * (index + 2)) / 2));
+            return value.dividedBy(numOf(((index + 1) * (index + 2)) / 2));
         }
-        
+
         int actualIndex = index;
-        for(int i = timeFrame; i > 0; i--) {
-            value = value.plus(Decimal.valueOf(i).multipliedBy(indicator.getValue(actualIndex)));
+        for (int i = barCount; i > 0; i--) {
+            value = value.plus(numOf(i).multipliedBy(indicator.getValue(actualIndex)));
             actualIndex--;
         }
-        return value.dividedBy(Decimal.valueOf((timeFrame * (timeFrame + 1)) / 2));
+        return value.dividedBy(numOf((barCount * (barCount + 1)) / 2));
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " timeFrame: " + timeFrame;
+        return getClass().getSimpleName() + " barCount: " + barCount;
     }
 }

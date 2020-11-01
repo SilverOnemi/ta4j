@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,8 +23,13 @@
  */
 package ta4jexamples.walkforward;
 
-import org.ta4j.core.*;
+import org.ta4j.core.AnalysisCriterion;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.BarSeriesManager;
+import org.ta4j.core.Strategy;
+import org.ta4j.core.TradingRecord;
 import org.ta4j.core.analysis.criteria.TotalProfitCriterion;
+import org.ta4j.core.num.Num;
 import ta4jexamples.loaders.CsvTradesLoader;
 import ta4jexamples.strategies.CCICorrectionStrategy;
 import ta4jexamples.strategies.GlobalExtremaStrategy;
@@ -39,97 +45,105 @@ import java.util.Map;
 
 /**
  * Walk-forward optimization example.
- * <p>
- * @see http://en.wikipedia.org/wiki/Walk_forward_optimization
- * @see http://www.futuresmag.com/2010/04/01/can-your-system-do-the-walk
+ *
+ * @see <a href="http://en.wikipedia.org/wiki/Walk_forward_optimization">
+ *      http://en.wikipedia.org/wiki/Walk_forward_optimization</a>
+ * @see <a href=
+ *      "http://www.futuresmag.com/2010/04/01/can-your-system-do-the-walk">
+ *      http://www.futuresmag.com/2010/04/01/can-your-system-do-the-walk</a>
  */
 public class WalkForward {
-    
+
     /**
      * Builds a list of split indexes from splitDuration.
-     * @param series the time series to get split begin indexes of
+     *
+     * @param series        the bar series to get split begin indexes of
      * @param splitDuration the duration between 2 splits
      * @return a list of begin indexes after split
      */
-    public static List<Integer> getSplitBeginIndexes(TimeSeries series, Duration splitDuration) {
+    public static List<Integer> getSplitBeginIndexes(BarSeries series, Duration splitDuration) {
         ArrayList<Integer> beginIndexes = new ArrayList<>();
 
         int beginIndex = series.getBeginIndex();
         int endIndex = series.getEndIndex();
-        
+
         // Adding the first begin index
         beginIndexes.add(beginIndex);
 
         // Building the first interval before next split
-        ZonedDateTime beginInterval = series.getFirstTick().getEndTime();
+        ZonedDateTime beginInterval = series.getFirstBar().getEndTime();
         ZonedDateTime endInterval = beginInterval.plus(splitDuration);
 
         for (int i = beginIndex; i <= endIndex; i++) {
-            // For each tick...
-            ZonedDateTime tickTime = series.getTick(i).getEndTime();
-            if (tickTime.isBefore(beginInterval) || !tickTime.isBefore(endInterval)) {
-                // Tick out of the interval
-                if (!endInterval.isAfter(tickTime)) {
-                    // Tick after the interval
+            // For each bar...
+            ZonedDateTime barTime = series.getBar(i).getEndTime();
+            if (barTime.isBefore(beginInterval) || !barTime.isBefore(endInterval)) {
+                // Bar out of the interval
+                if (!endInterval.isAfter(barTime)) {
+                    // Bar after the interval
                     // --> Adding a new begin index
                     beginIndexes.add(i);
                 }
 
                 // Building the new interval before next split
-                beginInterval = endInterval.isBefore(tickTime) ? tickTime : endInterval;
+                beginInterval = endInterval.isBefore(barTime) ? barTime : endInterval;
                 endInterval = beginInterval.plus(splitDuration);
             }
         }
         return beginIndexes;
     }
-    
+
     /**
-     * Returns a new time series which is a view of a subset of the current series.
-     * <p>
-     * The new series has begin and end indexes which correspond to the bounds of the sub-set into the full series.<br>
-     * The tick of the series are shared between the original time series and the returned one (i.e. no copy).
-     * @param series the time series to get a sub-series of
-     * @param beginIndex the begin index (inclusive) of the time series
-     * @param duration the duration of the time series
-     * @return a constrained {@link TimeSeries time series} which is a sub-set of the current series
+     * Returns a new bar series which is a view of a subset of the current series.
+     *
+     * The new series has begin and end indexes which correspond to the bounds of
+     * the sub-set into the full series.<br>
+     * The bar of the series are shared between the original bar series and the
+     * returned one (i.e. no copy).
+     *
+     * @param series     the bar series to get a sub-series of
+     * @param beginIndex the begin index (inclusive) of the bar series
+     * @param duration   the duration of the bar series
+     * @return a constrained {@link BarSeries bar series} which is a sub-set of the
+     *         current series
      */
-    public static TimeSeries subseries(TimeSeries series, int beginIndex, Duration duration) {
+    public static BarSeries subseries(BarSeries series, int beginIndex, Duration duration) {
 
         // Calculating the sub-series interval
-        ZonedDateTime beginInterval = series.getTick(beginIndex).getEndTime();
+        ZonedDateTime beginInterval = series.getBar(beginIndex).getEndTime();
         ZonedDateTime endInterval = beginInterval.plus(duration);
 
-        // Checking ticks belonging to the sub-series (starting at the provided index)
-        int subseriesNbTicks = 0;
+        // Checking bars belonging to the sub-series (starting at the provided index)
+        int subseriesNbBars = 0;
         int endIndex = series.getEndIndex();
         for (int i = beginIndex; i <= endIndex; i++) {
-            // For each tick...
-            ZonedDateTime tickTime = series.getTick(i).getEndTime();
-            if (tickTime.isBefore(beginInterval) || !tickTime.isBefore(endInterval)) {
-                // Tick out of the interval
+            // For each bar...
+            ZonedDateTime barTime = series.getBar(i).getEndTime();
+            if (barTime.isBefore(beginInterval) || !barTime.isBefore(endInterval)) {
+                // Bar out of the interval
                 break;
             }
-            // Tick in the interval
-            // --> Incrementing the number of ticks in the subseries
-            subseriesNbTicks++;
+            // Bar in the interval
+            // --> Incrementing the number of bars in the subseries
+            subseriesNbBars++;
         }
 
-        return new BaseTimeSeries(series, beginIndex, beginIndex + subseriesNbTicks - 1);
+        return series.getSubSeries(beginIndex, beginIndex + subseriesNbBars);
     }
 
     /**
-     * Splits the time series into sub-series lasting sliceDuration.<br>
-     * The current time series is splitted every splitDuration.<br>
+     * Splits the bar series into sub-series lasting sliceDuration.<br>
+     * The current bar series is splitted every splitDuration.<br>
      * The last sub-series may last less than sliceDuration.
-     * @param series the time series to split
+     *
+     * @param series        the bar series to split
      * @param splitDuration the duration between 2 splits
      * @param sliceDuration the duration of each sub-series
      * @return a list of sub-series
      */
-    public static List<TimeSeries> splitSeries(TimeSeries series, Duration splitDuration, Duration sliceDuration) {
-        ArrayList<TimeSeries> subseries = new ArrayList<>();
-        if (splitDuration != null && !splitDuration.isZero()
-                && sliceDuration != null && !sliceDuration.isZero()) {
+    public static List<BarSeries> splitSeries(BarSeries series, Duration splitDuration, Duration sliceDuration) {
+        ArrayList<BarSeries> subseries = new ArrayList<>();
+        if (splitDuration != null && !splitDuration.isZero() && sliceDuration != null && !sliceDuration.isZero()) {
 
             List<Integer> beginIndexes = getSplitBeginIndexes(series, splitDuration);
             for (Integer subseriesBegin : beginIndexes) {
@@ -140,10 +154,10 @@ public class WalkForward {
     }
 
     /**
-     * @param series the time series
+     * @param series the bar series
      * @return a map (key: strategy, value: name) of trading strategies
      */
-    public static Map<Strategy, String> buildStrategiesMap(TimeSeries series) {
+    public static Map<Strategy, String> buildStrategiesMap(BarSeries series) {
         HashMap<Strategy, String> strategies = new HashMap<>();
         strategies.put(CCICorrectionStrategy.buildStrategy(series), "CCI Correction");
         strategies.put(GlobalExtremaStrategy.buildStrategy(series), "Global Extrema");
@@ -154,8 +168,8 @@ public class WalkForward {
 
     public static void main(String[] args) {
         // Splitting the series into slices
-        TimeSeries series = CsvTradesLoader.loadBitstampSeries();
-        List<TimeSeries> subseries = splitSeries(series, Duration.ofHours(6), Duration.ofDays(7));
+        BarSeries series = CsvTradesLoader.loadBitstampSeries();
+        List<BarSeries> subseries = splitSeries(series, Duration.ofHours(6), Duration.ofDays(7));
 
         // Building the map of strategies
         Map<Strategy, String> strategies = buildStrategiesMap(series);
@@ -163,21 +177,22 @@ public class WalkForward {
         // The analysis criterion
         AnalysisCriterion profitCriterion = new TotalProfitCriterion();
 
-        for (TimeSeries slice : subseries) {
+        for (BarSeries slice : subseries) {
             // For each sub-series...
             System.out.println("Sub-series: " + slice.getSeriesPeriodDescription());
-            TimeSeriesManager sliceManager = new TimeSeriesManager(slice);
+            BarSeriesManager sliceManager = new BarSeriesManager(slice);
             for (Map.Entry<Strategy, String> entry : strategies.entrySet()) {
                 Strategy strategy = entry.getKey();
                 String name = entry.getValue();
                 // For each strategy...
                 TradingRecord tradingRecord = sliceManager.run(strategy);
-                double profit = profitCriterion.calculate(slice, tradingRecord);
+                Num profit = profitCriterion.calculate(slice, tradingRecord);
                 System.out.println("\tProfit for " + name + ": " + profit);
             }
-            Strategy bestStrategy = profitCriterion.chooseBest(sliceManager, new ArrayList<Strategy>(strategies.keySet()));
+            Strategy bestStrategy = profitCriterion.chooseBest(sliceManager,
+                    new ArrayList<Strategy>(strategies.keySet()));
             System.out.println("\t\t--> Best strategy: " + strategies.get(bestStrategy) + "\n");
         }
     }
-    
+
 }

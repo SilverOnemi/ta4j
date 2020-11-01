@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,32 +23,55 @@
  */
 package org.ta4j.core.indicators;
 
-import org.ta4j.core.Decimal;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.Indicator;
+import org.ta4j.core.indicators.helpers.MedianPriceIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Awesome oscillator. (AO)
- * <p>
- * @see http://www.forexgurus.co.uk/indicators/awesome-oscillator
+ *
+ * see https://www.tradingview.com/wiki/Awesome_Oscillator_(AO)
  */
-public class AwesomeOscillatorIndicator extends CachedIndicator<Decimal> {
+public class AwesomeOscillatorIndicator extends CachedIndicator<Num> {
 
-    private SMAIndicator sma5;
+    private final SMAIndicator sma5;
 
-    private SMAIndicator sma34;
+    private final SMAIndicator sma34;
 
-    public AwesomeOscillatorIndicator(Indicator<Decimal> indicator, int timeFrameSma1, int timeFrameSma2) {
+    /**
+     * Constructor.
+     *
+     * @param indicator    (normally {@link MedianPriceIndicator})
+     * @param barCountSma1 (normally 5)
+     * @param barCountSma2 (normally 34)
+     */
+    public AwesomeOscillatorIndicator(Indicator<Num> indicator, int barCountSma1, int barCountSma2) {
         super(indicator);
-        this.sma5 = new SMAIndicator(indicator, timeFrameSma1);
-        this.sma34 = new SMAIndicator(indicator, timeFrameSma2);
+        this.sma5 = new SMAIndicator(indicator, barCountSma1);
+        this.sma34 = new SMAIndicator(indicator, barCountSma2);
     }
 
-    public AwesomeOscillatorIndicator(Indicator<Decimal> indicator) {
+    /**
+     * Constructor.
+     *
+     * @param indicator (normally {@link MedianPriceIndicator})
+     */
+    public AwesomeOscillatorIndicator(Indicator<Num> indicator) {
         this(indicator, 5, 34);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param series the bar series
+     */
+    public AwesomeOscillatorIndicator(BarSeries series) {
+        this(new MedianPriceIndicator(series), 5, 34);
+    }
+
     @Override
-    protected Decimal calculate(int index) {
+    protected Num calculate(int index) {
         return sma5.getValue(index).minus(sma34.getValue(index));
     }
 }

@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,59 +23,57 @@
  */
 package org.ta4j.core.indicators.volume;
 
-
-import org.ta4j.core.Decimal;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.CachedIndicator;
 import org.ta4j.core.indicators.helpers.CloseLocationValueIndicator;
 import org.ta4j.core.indicators.helpers.VolumeIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Chaikin Money Flow (CMF) indicator.
- * <p>
- * @see http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:chaikin_money_flow_cmf
- * @see http://www.fmlabs.com/reference/default.htm?url=ChaikinMoneyFlow.htm
+ *
+ * @see <a href=
+ *      "http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:chaikin_money_flow_cmf">
+ *      http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:chaikin_money_flow_cmf"</a>
+ * @see <a href=
+ *      "http://www.fmlabs.com/reference/default.htm?url=ChaikinMoneyFlow.htm">
+ *      http://www.fmlabs.com/reference/default.htm?url=ChaikinMoneyFlow.htm</a>
  */
-public class ChaikinMoneyFlowIndicator extends CachedIndicator<Decimal> {
+public class ChaikinMoneyFlowIndicator extends CachedIndicator<Num> {
 
-    private TimeSeries series;
-    
-    private CloseLocationValueIndicator clvIndicator;
-    
-    private VolumeIndicator volumeIndicator;
-    
-    private int timeFrame;
+    private final CloseLocationValueIndicator clvIndicator;
+    private final VolumeIndicator volumeIndicator;
+    private final int barCount;
 
-    public ChaikinMoneyFlowIndicator(TimeSeries series, int timeFrame) {
+    public ChaikinMoneyFlowIndicator(BarSeries series, int barCount) {
         super(series);
-        this.series = series;
-        this.timeFrame = timeFrame;
+        this.barCount = barCount;
         this.clvIndicator = new CloseLocationValueIndicator(series);
-        this.volumeIndicator = new VolumeIndicator(series, timeFrame);
+        this.volumeIndicator = new VolumeIndicator(series, barCount);
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        int startIndex = Math.max(0, index - timeFrame + 1);
-        Decimal sumOfMoneyFlowVolume = Decimal.ZERO;
+    protected Num calculate(int index) {
+        int startIndex = Math.max(0, index - barCount + 1);
+        Num sumOfMoneyFlowVolume = numOf(0);
         for (int i = startIndex; i <= index; i++) {
             sumOfMoneyFlowVolume = sumOfMoneyFlowVolume.plus(getMoneyFlowVolume(i));
         }
-        Decimal sumOfVolume = volumeIndicator.getValue(index);
-        
+        Num sumOfVolume = volumeIndicator.getValue(index);
+
         return sumOfMoneyFlowVolume.dividedBy(sumOfVolume);
     }
-    
+
     /**
-     * @param index the tick index
-     * @return the money flow volume for the i-th period/tick
+     * @param index the bar index
+     * @return the money flow volume for the i-th period/bar
      */
-    private Decimal getMoneyFlowVolume(int index) {
-        return clvIndicator.getValue(index).multipliedBy(series.getTick(index).getVolume());
+    private Num getMoneyFlowVolume(int index) {
+        return clvIndicator.getValue(index).multipliedBy(getBarSeries().getBar(index).getVolume());
     }
-    
+
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " timeFrame: " + timeFrame;
+        return getClass().getSimpleName() + " barCount: " + barCount;
     }
 }

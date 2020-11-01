@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,46 +23,60 @@
  */
 package org.ta4j.core.indicators.ichimoku;
 
-import org.ta4j.core.Decimal;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.CachedIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
+import org.ta4j.core.num.NaN;
+import org.ta4j.core.num.Num;
 
 /**
  * Ichimoku clouds: Chikou Span indicator
- * <p>
- * @see http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:ichimoku_cloud
+ *
+ * @see <a href=
+ *      "http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:ichimoku_cloud">
+ *      http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:ichimoku_cloud</a>
  */
-public class IchimokuChikouSpanIndicator extends CachedIndicator<Decimal> {
+public class IchimokuChikouSpanIndicator extends CachedIndicator<Num> {
 
-    /** The close price */
+    /**
+     * The close price
+     */
     private final ClosePriceIndicator closePriceIndicator;
-    
-    /** The time delay */
+
+    /**
+     * The time delay
+     */
     private final int timeDelay;
-    
+
     /**
      * Constructor.
+     *
      * @param series the series
      */
-    public IchimokuChikouSpanIndicator(TimeSeries series) {
+    public IchimokuChikouSpanIndicator(BarSeries series) {
         this(series, 26);
     }
-    
+
     /**
      * Constructor.
-     * @param series the series
+     *
+     * @param series    the series
      * @param timeDelay the time delay (usually 26)
      */
-    public IchimokuChikouSpanIndicator(TimeSeries series, int timeDelay) {
+    public IchimokuChikouSpanIndicator(BarSeries series, int timeDelay) {
         super(series);
-        closePriceIndicator = new ClosePriceIndicator(series);
+        this.closePriceIndicator = new ClosePriceIndicator(series);
         this.timeDelay = timeDelay;
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        return closePriceIndicator.getValue(Math.max(0, index - timeDelay));
+    protected Num calculate(int index) {
+        int spanIndex = index + timeDelay;
+        if (spanIndex <= getBarSeries().getEndIndex()) {
+            return closePriceIndicator.getValue(spanIndex);
+        } else {
+            return NaN.NaN;
+        }
     }
 
 }

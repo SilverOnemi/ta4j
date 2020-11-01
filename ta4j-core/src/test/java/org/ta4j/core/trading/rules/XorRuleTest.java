@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -33,24 +34,23 @@ public class XorRuleTest {
 
     private Rule satisfiedRule;
     private Rule unsatisfiedRule;
-    
+
     @Before
     public void setUp() {
         satisfiedRule = new BooleanRule(true);
         unsatisfiedRule = new BooleanRule(false);
     }
-    
+
     @Test
     public void isSatisfied() {
         assertTrue(satisfiedRule.xor(BooleanRule.FALSE).isSatisfied(0));
         assertTrue(BooleanRule.FALSE.xor(satisfiedRule).isSatisfied(0));
         assertFalse(unsatisfiedRule.xor(BooleanRule.FALSE).isSatisfied(0));
         assertFalse(BooleanRule.FALSE.xor(unsatisfiedRule).isSatisfied(0));
-        
+
         assertFalse(satisfiedRule.xor(BooleanRule.TRUE).isSatisfied(10));
         assertFalse(BooleanRule.TRUE.xor(satisfiedRule).isSatisfied(10));
         assertTrue(unsatisfiedRule.xor(BooleanRule.TRUE).isSatisfied(10));
         assertTrue(BooleanRule.TRUE.xor(unsatisfiedRule).isSatisfied(10));
     }
 }
-        

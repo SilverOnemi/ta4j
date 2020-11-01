@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -25,73 +26,75 @@ package org.ta4j.core.indicators.statistics;
 import org.junit.Before;
 import org.junit.Test;
 import org.ta4j.core.*;
+import org.ta4j.core.indicators.AbstractIndicatorTest;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
-import org.ta4j.core.mocks.MockTimeSeries;
+import org.ta4j.core.mocks.MockBarSeries;
+import org.ta4j.core.num.Num;
 import org.ta4j.core.trading.rules.CrossedDownIndicatorRule;
 import org.ta4j.core.trading.rules.CrossedUpIndicatorRule;
 
+import java.util.function.Function;
+
 import static org.junit.Assert.assertEquals;
-import static org.ta4j.core.TATestsUtils.assertDecimalEquals;
+import static org.ta4j.core.TestUtils.assertNumEquals;
+import static org.ta4j.core.num.NaN.NaN;
 
+public class PeriodicalGrowthRateIndicatorTest extends AbstractIndicatorTest<Indicator<Num>, Num> {
 
-public class PeriodicalGrowthRateIndicatorTest {
+    private BarSeriesManager seriesManager;
 
-    private TimeSeries mockSeries;
-    
-    private TimeSeriesManager seriesManager;
-    
     private ClosePriceIndicator closePrice;
-    
+
+    public PeriodicalGrowthRateIndicatorTest(Function<Number, Num> numFunction) {
+        super(numFunction);
+    }
+
     @Before
     public void setUp() {
-        mockSeries = new MockTimeSeries(
-                29.49, 28.30, 27.74, 27.65, 27.60, 28.70, 28.60,
-                28.19, 27.40, 27.20, 27.28, 27.00, 27.59, 26.20,
-                25.75, 24.75, 23.33, 24.45, 24.25, 25.02, 23.60,
-                24.20, 24.28, 25.70, 25.46, 25.10, 25.00, 25.00,
-                25.85);
-        seriesManager = new TimeSeriesManager(mockSeries);
+        BarSeries mockSeries = new MockBarSeries(numFunction, 29.49, 28.30, 27.74, 27.65, 27.60, 28.70, 28.60, 28.19,
+                27.40, 27.20, 27.28, 27.00, 27.59, 26.20, 25.75, 24.75, 23.33, 24.45, 24.25, 25.02, 23.60, 24.20, 24.28,
+                25.70, 25.46, 25.10, 25.00, 25.00, 25.85);
+        seriesManager = new BarSeriesManager(mockSeries);
         closePrice = new ClosePriceIndicator(mockSeries);
     }
 
     @Test
-    public void testGetTotalReturn() { 
+    public void testGetTotalReturn() {
         PeriodicalGrowthRateIndicator gri = new PeriodicalGrowthRateIndicator(this.closePrice, 5);
-        double expResult = 0.9564;
-        double result = gri.getTotalReturn();
-        assertEquals(expResult, result, 0.01);
+        Num result = gri.getTotalReturn();
+        assertNumEquals(0.9564, result);
     }
-    
+
     @Test
-    public void testCalculation() { 
-        PeriodicalGrowthRateIndicator gri = new PeriodicalGrowthRateIndicator(this.closePrice,5);
-        
-        assertEquals(gri.getValue(0), Decimal.NaN);
-        assertEquals(gri.getValue(4), Decimal.NaN);
-        assertDecimalEquals(gri.getValue(5), -0.0268);
-        assertDecimalEquals(gri.getValue(6), 0.0541);
-        assertDecimalEquals(gri.getValue(10), -0.0495);
-        assertDecimalEquals(gri.getValue(21), 0.2009);
-        assertDecimalEquals(gri.getValue(24), 0.0220);
-        assertEquals(gri.getValue(25), Decimal.NaN);
-        assertEquals(gri.getValue(26), Decimal.NaN);
+    public void testCalculation() {
+        PeriodicalGrowthRateIndicator gri = new PeriodicalGrowthRateIndicator(this.closePrice, 5);
+
+        assertEquals(gri.getValue(0), NaN);
+        assertEquals(gri.getValue(4), NaN);
+        assertNumEquals(-0.0268, gri.getValue(5));
+        assertNumEquals(0.0541, gri.getValue(6));
+        assertNumEquals(-0.0495, gri.getValue(10));
+        assertNumEquals(0.2009, gri.getValue(21));
+        assertNumEquals(0.0220, gri.getValue(24));
+        assertEquals(gri.getValue(25), NaN);
+        assertEquals(gri.getValue(26), NaN);
     }
-    
+
     @Test
-    public void testStrategies() { 
-        
-        PeriodicalGrowthRateIndicator gri = new PeriodicalGrowthRateIndicator(this.closePrice,5);
+    public void testStrategies() {
+
+        PeriodicalGrowthRateIndicator gri = new PeriodicalGrowthRateIndicator(this.closePrice, 5);
 
         // Rules
-        Rule buyingRule = new CrossedUpIndicatorRule(gri, Decimal.ZERO); 
-        Rule sellingRule = new CrossedDownIndicatorRule(gri, Decimal.ZERO);     
-        
+        Rule buyingRule = new CrossedUpIndicatorRule(gri, 0);
+        Rule sellingRule = new CrossedDownIndicatorRule(gri, 0);
+
         Strategy strategy = new BaseStrategy(buyingRule, sellingRule);
-                
+
         // Check trades
-        int result = seriesManager.run(strategy).getTradeCount();             
+        int result = seriesManager.run(strategy).getTradeCount();
         int expResult = 3;
-        
+
         assertEquals(expResult, result);
     }
 }

@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,6 +23,7 @@
  */
 package org.ta4j.core.indicators.helpers;
 
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.AbstractIndicator;
 
 import java.util.ArrayList;
@@ -30,21 +32,25 @@ import java.util.List;
 
 /**
  * A fixed indicator.
+ * 
  * @param <T> the type of returned value (Double, Boolean, etc.)
  */
 public class FixedIndicator<T> extends AbstractIndicator<T> {
 
-    private final List<T> values = new ArrayList<T>();
+    private static final long serialVersionUID = -2946691798800328858L;
+    private final List<T> values = new ArrayList<>();
 
     /**
      * Constructor.
+     * 
      * @param values the values to be returned by this indicator
      */
-    public FixedIndicator(T... values) {
-        super(null);
+    @SafeVarargs
+    public FixedIndicator(BarSeries series, T... values) {
+        super(series);
         this.values.addAll(Arrays.asList(values));
     }
-    
+
     public void addValue(T value) {
         this.values.add(value);
     }
@@ -53,4 +59,5 @@ public class FixedIndicator<T> extends AbstractIndicator<T> {
     public T getValue(int index) {
         return values.get(index);
     }
+
 }

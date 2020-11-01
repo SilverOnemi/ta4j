@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,41 +23,42 @@
  */
 package org.ta4j.core.indicators;
 
-import org.ta4j.core.Decimal;
 import org.ta4j.core.Indicator;
 import org.ta4j.core.indicators.helpers.DifferenceIndicator;
 import org.ta4j.core.indicators.helpers.MultiplierIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Hull moving average (HMA) indicator.
- * <p>
- * @see http://alanhull.com/hull-moving-average
+ *
+ * @see <a href="http://alanhull.com/hull-moving-average">
+ *      http://alanhull.com/hull-moving-average</a>
  */
-public class HMAIndicator extends CachedIndicator<Decimal> {
+public class HMAIndicator extends CachedIndicator<Num> {
 
-    private final int timeFrame;
+    private final int barCount;
 
     private final WMAIndicator sqrtWma;
-    
-    public HMAIndicator(Indicator<Decimal> indicator, int timeFrame) {
+
+    public HMAIndicator(Indicator<Num> indicator, int barCount) {
         super(indicator);
-        this.timeFrame = timeFrame;
-        
-        WMAIndicator halfWma = new WMAIndicator(indicator, timeFrame / 2);
-        WMAIndicator origWma = new WMAIndicator(indicator, timeFrame);
-        
-        Indicator indicatorForSqrtWma = new DifferenceIndicator(new MultiplierIndicator(halfWma, Decimal.TWO), origWma);
-        sqrtWma = new WMAIndicator(indicatorForSqrtWma, (int) Math.sqrt(timeFrame));
+        this.barCount = barCount;
+
+        WMAIndicator halfWma = new WMAIndicator(indicator, barCount / 2);
+        WMAIndicator origWma = new WMAIndicator(indicator, barCount);
+
+        Indicator<Num> indicatorForSqrtWma = new DifferenceIndicator(new MultiplierIndicator(halfWma, 2), origWma);
+        sqrtWma = new WMAIndicator(indicatorForSqrtWma, numOf(barCount).sqrt().intValue());
     }
 
     @Override
-    protected Decimal calculate(int index) {
+    protected Num calculate(int index) {
         return sqrtWma.getValue(index);
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " timeFrame: " + timeFrame;
+        return getClass().getSimpleName() + " barCount: " + barCount;
     }
 
 }

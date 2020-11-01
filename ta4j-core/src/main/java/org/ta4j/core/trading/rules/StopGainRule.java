@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,52 +23,86 @@
  */
 package org.ta4j.core.trading.rules;
 
-import org.ta4j.core.Decimal;
 import org.ta4j.core.Trade;
 import org.ta4j.core.TradingRecord;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * A stop-gain rule.
- * <p>
+ *
  * Satisfied when the close price reaches the gain threshold.
  */
 public class StopGainRule extends AbstractRule {
 
-    /** The close price indicator */
-    private ClosePriceIndicator closePrice;
-    
-    /** The gain ratio threshold (e.g. 1.03 for 3%) */
-    private Decimal gainRatioThreshold;
+    /**
+     * Constant value for 100
+     */
+    private final Num HUNDRED;
+
+    /**
+     * The close price indicator
+     */
+    private final ClosePriceIndicator closePrice;
+
+    /**
+     * The gain percentage
+     */
+    private final Num gainPercentage;
 
     /**
      * Constructor.
-     * @param closePrice the close price indicator
+     *
+     * @param closePrice     the close price indicator
      * @param gainPercentage the gain percentage
      */
-    public StopGainRule(ClosePriceIndicator closePrice, Decimal gainPercentage) {
+    public StopGainRule(ClosePriceIndicator closePrice, Number gainPercentage) {
+        this(closePrice, closePrice.numOf(gainPercentage));
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param closePrice     the close price indicator
+     * @param gainPercentage the gain percentage
+     */
+    public StopGainRule(ClosePriceIndicator closePrice, Num gainPercentage) {
         this.closePrice = closePrice;
-        this.gainRatioThreshold = Decimal.HUNDRED.plus(gainPercentage).dividedBy(Decimal.HUNDRED);
+        this.gainPercentage = gainPercentage;
+        HUNDRED = closePrice.numOf(100);
     }
 
     @Override
     public boolean isSatisfied(int index, TradingRecord tradingRecord) {
         boolean satisfied = false;
-        // No trading history or no trade opened, no gain
+        // No trading history or no trade opened, no loss
         if (tradingRecord != null) {
             Trade currentTrade = tradingRecord.getCurrentTrade();
             if (currentTrade.isOpened()) {
-                Decimal entryPrice = currentTrade.getEntry().getPrice();
-                Decimal currentPrice = closePrice.getValue(index);
-                Decimal threshold = entryPrice.multipliedBy(gainRatioThreshold);
+
+                Num entryPrice = currentTrade.getEntry().getNetPrice();
+                Num currentPrice = closePrice.getValue(index);
+
                 if (currentTrade.getEntry().isBuy()) {
-                    satisfied = currentPrice.isGreaterThanOrEqual(threshold);
+                    satisfied = isBuyGainSatisfied(entryPrice, currentPrice);
                 } else {
-                    satisfied = currentPrice.isLessThanOrEqual(threshold);
+                    satisfied = isSellGainSatisfied(entryPrice, currentPrice);
                 }
             }
         }
         traceIsSatisfied(index, satisfied);
         return satisfied;
+    }
+
+    private boolean isSellGainSatisfied(Num entryPrice, Num currentPrice) {
+        Num lossRatioThreshold = HUNDRED.minus(gainPercentage).dividedBy(HUNDRED);
+        Num threshold = entryPrice.multipliedBy(lossRatioThreshold);
+        return currentPrice.isLessThanOrEqual(threshold);
+    }
+
+    private boolean isBuyGainSatisfied(Num entryPrice, Num currentPrice) {
+        Num lossRatioThreshold = HUNDRED.plus(gainPercentage).dividedBy(HUNDRED);
+        Num threshold = entryPrice.multipliedBy(lossRatioThreshold);
+        return currentPrice.isGreaterThanOrEqual(threshold);
     }
 }

@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,39 +23,34 @@
  */
 package org.ta4j.core.indicators.volume;
 
-
-import org.ta4j.core.Decimal;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.RecursiveCachedIndicator;
 import org.ta4j.core.indicators.helpers.CloseLocationValueIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Accumulation-distribution indicator.
- * <p>
  */
-public class AccumulationDistributionIndicator extends RecursiveCachedIndicator<Decimal> {
+public class AccumulationDistributionIndicator extends RecursiveCachedIndicator<Num> {
 
-    private TimeSeries series;
-    
-    private CloseLocationValueIndicator clvIndicator;
+    private final CloseLocationValueIndicator clvIndicator;
 
-    public AccumulationDistributionIndicator(TimeSeries series) {
+    public AccumulationDistributionIndicator(BarSeries series) {
         super(series);
-        this.series = series;
         this.clvIndicator = new CloseLocationValueIndicator(series);
     }
 
     @Override
-    protected Decimal calculate(int index) {
+    protected Num calculate(int index) {
         if (index == 0) {
-            return Decimal.ZERO;
+            return numOf(0);
         }
 
         // Calculating the money flow multiplier
-        Decimal moneyFlowMultiplier = clvIndicator.getValue(index);
+        Num moneyFlowMultiplier = clvIndicator.getValue(index);
 
         // Calculating the money flow volume
-        Decimal moneyFlowVolume = moneyFlowMultiplier.multipliedBy(series.getTick(index).getVolume());
+        Num moneyFlowVolume = moneyFlowMultiplier.multipliedBy(getBarSeries().getBar(index).getVolume());
 
         return moneyFlowVolume.plus(getValue(index - 1));
     }

@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,46 +25,82 @@ package org.ta4j.core.indicators;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.ExternalIndicatorTest;
+import org.ta4j.core.Indicator;
+import org.ta4j.core.TestUtils;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
-import org.ta4j.core.mocks.MockTimeSeries;
+import org.ta4j.core.mocks.MockBarSeries;
+import org.ta4j.core.num.Num;
 
-import static junit.framework.TestCase.assertEquals;
-import static org.ta4j.core.TATestsUtils.assertDecimalEquals;
+import java.util.function.Function;
 
-public class SMAIndicatorTest {
+import static org.junit.Assert.assertEquals;
+import static org.ta4j.core.TestUtils.assertIndicatorEquals;
+import static org.ta4j.core.TestUtils.assertNumEquals;
 
-    private TimeSeries data;
+public class SMAIndicatorTest extends AbstractIndicatorTest<Indicator<Num>, Num> {
+
+    private ExternalIndicatorTest xls;
+
+    public SMAIndicatorTest(Function<Number, Num> numFunction) throws Exception {
+        super((data, params) -> new SMAIndicator((Indicator<Num>) data, (int) params[0]), numFunction);
+        xls = new XLSIndicatorTest(this.getClass(), "SMA.xls", 6, numFunction);
+    }
+
+    private BarSeries data;
 
     @Before
     public void setUp() {
-        data = new MockTimeSeries(1, 2, 3, 4, 3, 4, 5, 4, 3, 3, 4, 3, 2);
+        data = new MockBarSeries(numFunction, 1, 2, 3, 4, 3, 4, 5, 4, 3, 3, 4, 3, 2);
     }
 
     @Test
-    public void SMAUsingTimeFrame3UsingClosePrice() {
-        SMAIndicator sma = new SMAIndicator(new ClosePriceIndicator(data), 3);
+    public void usingBarCount3UsingClosePrice() throws Exception {
+        Indicator<Num> indicator = getIndicator(new ClosePriceIndicator(data), 3);
 
-        assertDecimalEquals(sma.getValue(0), 1);
-        assertDecimalEquals(sma.getValue(1), 1.5);
-        assertDecimalEquals(sma.getValue(2), 2);
-        assertDecimalEquals(sma.getValue(3), 3);
-        assertDecimalEquals(sma.getValue(4), 10d/3);
-        assertDecimalEquals(sma.getValue(5), 11d/3);
-        assertDecimalEquals(sma.getValue(6), 4);
-        assertDecimalEquals(sma.getValue(7), 13d/3);
-        assertDecimalEquals(sma.getValue(8), 4);
-        assertDecimalEquals(sma.getValue(9), 10d/3);
-        assertDecimalEquals(sma.getValue(10), 10d/3);
-        assertDecimalEquals(sma.getValue(11), 10d/3);
-        assertDecimalEquals(sma.getValue(12), 3);
+        assertNumEquals(1, indicator.getValue(0));
+        assertNumEquals(1.5, indicator.getValue(1));
+        assertNumEquals(2, indicator.getValue(2));
+        assertNumEquals(3, indicator.getValue(3));
+        assertNumEquals(10d / 3, indicator.getValue(4));
+        assertNumEquals(11d / 3, indicator.getValue(5));
+        assertNumEquals(4, indicator.getValue(6));
+        assertNumEquals(13d / 3, indicator.getValue(7));
+        assertNumEquals(4, indicator.getValue(8));
+        assertNumEquals(10d / 3, indicator.getValue(9));
+        assertNumEquals(10d / 3, indicator.getValue(10));
+        assertNumEquals(10d / 3, indicator.getValue(11));
+        assertNumEquals(3, indicator.getValue(12));
     }
 
     @Test
-    public void SMAWhenTimeFrameIs1ResultShouldBeIndicatorValue() {
-        SMAIndicator quoteSMA = new SMAIndicator(new ClosePriceIndicator(data), 1);
-        for (int i = 0; i < data.getTickCount(); i++) {
-            assertEquals(data.getTick(i).getClosePrice(), quoteSMA.getValue(i));
+    public void whenBarCountIs1ResultShouldBeIndicatorValue() throws Exception {
+        Indicator<Num> indicator = getIndicator(new ClosePriceIndicator(data), 1);
+        for (int i = 0; i < data.getBarCount(); i++) {
+            assertEquals(data.getBar(i).getClosePrice(), indicator.getValue(i));
         }
     }
+
+    @Test
+    public void externalData() throws Exception {
+        Indicator<Num> xlsClose = new ClosePriceIndicator(xls.getSeries());
+        Indicator<Num> actualIndicator;
+
+        actualIndicator = getIndicator(xlsClose, 1);
+        assertIndicatorEquals(xls.getIndicator(1), actualIndicator);
+        assertEquals(329.0, actualIndicator.getValue(actualIndicator.getBarSeries().getEndIndex()).doubleValue(),
+                TestUtils.GENERAL_OFFSET);
+
+        actualIndicator = getIndicator(xlsClose, 3);
+        assertIndicatorEquals(xls.getIndicator(3), actualIndicator);
+        assertEquals(326.6333, actualIndicator.getValue(actualIndicator.getBarSeries().getEndIndex()).doubleValue(),
+                TestUtils.GENERAL_OFFSET);
+
+        actualIndicator = getIndicator(xlsClose, 13);
+        assertIndicatorEquals(xls.getIndicator(13), actualIndicator);
+        assertEquals(327.7846, actualIndicator.getValue(actualIndicator.getBarSeries().getEndIndex()).doubleValue(),
+                TestUtils.GENERAL_OFFSET);
+    }
+
 }

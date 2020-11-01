@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,31 +23,35 @@
  */
 package org.ta4j.core.indicators.volume;
 
-import org.ta4j.core.Decimal;
 import org.ta4j.core.Indicator;
 import org.ta4j.core.indicators.CachedIndicator;
 import org.ta4j.core.indicators.SMAIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * The Moving volume weighted average price (MVWAP) Indicator.
- * @see http://www.investopedia.com/articles/trading/11/trading-with-vwap-mvwap.asp
+ * 
+ * @see <a href=
+ *      "http://www.investopedia.com/articles/trading/11/trading-with-vwap-mvwap.asp">
+ *      http://www.investopedia.com/articles/trading/11/trading-with-vwap-mvwap.asp</a>
  */
-public class MVWAPIndicator extends CachedIndicator<Decimal> {
+public class MVWAPIndicator extends CachedIndicator<Num> {
 
-    private final Indicator<Decimal> sma;
-    
+    private final Indicator<Num> sma;
+
     /**
      * Constructor.
-     * @param vwap the vwap
-     * @param timeFrame the time frame
+     * 
+     * @param vwap     the vwap
+     * @param barCount the time frame
      */
-    public MVWAPIndicator(VWAPIndicator vwap, int timeFrame) {
+    public MVWAPIndicator(VWAPIndicator vwap, int barCount) {
         super(vwap);
-        sma = new SMAIndicator(vwap, timeFrame);
+        this.sma = new SMAIndicator(vwap, barCount);
     }
 
     @Override
-    protected Decimal calculate(int index) {
+    protected Num calculate(int index) {
         return sma.getValue(index);
     }
 

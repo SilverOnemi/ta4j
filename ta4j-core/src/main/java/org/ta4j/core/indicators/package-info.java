@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,9 +23,12 @@
  */
 /**
  * Technical indicators.
- * <p>
- * Market indicators are mathematical transformations.
- * They are used to help assess whether an asset is trending, and if it is, the probability of its direction and of continuation.
- * @see <a href="http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators">http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators</a>
+ *
+ * Market indicators are mathematical transformations. They are used to help
+ * assess whether an asset is trending, and if it is, the probability of its
+ * direction and of continuation.
+ * 
+ * @see <a href=
+ *      "http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators">http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators</a>
  */
 package org.ta4j.core.indicators;

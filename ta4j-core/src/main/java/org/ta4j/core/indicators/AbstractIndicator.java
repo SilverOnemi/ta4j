@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,30 +25,33 @@ package org.ta4j.core.indicators;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.Indicator;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.num.Num;
 
 /**
  * Abstract {@link Indicator indicator}.
- * <p>
  */
 public abstract class AbstractIndicator<T> implements Indicator<T> {
 
-    /** The logger */
+    /**
+     * The logger
+     */
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
-    private TimeSeries series;
+    private final BarSeries series;
 
     /**
      * Constructor.
-     * @param series the related time series
+     *
+     * @param series the related bar series
      */
-    public AbstractIndicator(TimeSeries series) {
+    public AbstractIndicator(BarSeries series) {
         this.series = series;
     }
 
     @Override
-    public TimeSeries getTimeSeries() {
+    public BarSeries getBarSeries() {
         return series;
     }
 
@@ -55,4 +59,10 @@ public abstract class AbstractIndicator<T> implements Indicator<T> {
     public String toString() {
         return getClass().getSimpleName();
     }
+
+    @Override
+    public Num numOf(Number number) {
+        return series.numOf(number);
+    }
+
 }

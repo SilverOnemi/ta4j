@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,38 +23,55 @@
  */
 package org.ta4j.core.trading.rules;
 
-import org.ta4j.core.Decimal;
 import org.ta4j.core.Indicator;
 import org.ta4j.core.TradingRecord;
 import org.ta4j.core.indicators.helpers.ConstantIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Indicator-over-indicator rule.
- * <p>
- * Satisfied when the value of the first {@link Indicator indicator} is strictly greater than the value of the second one.
+ *
+ * Satisfied when the value of the first {@link Indicator indicator} is strictly
+ * greater than the value of the second one.
  */
 public class OverIndicatorRule extends AbstractRule {
 
-    /** The first indicator */
-    private Indicator<Decimal> first;
-    /** The second indicator */
-    private Indicator<Decimal> second;
+    /**
+     * The first indicator
+     */
+    private final Indicator<Num> first;
+    /**
+     * The second indicator
+     */
+    private final Indicator<Num> second;
 
     /**
      * Constructor.
+     *
      * @param indicator the indicator
      * @param threshold a threshold
      */
-    public OverIndicatorRule(Indicator<Decimal> indicator, Decimal threshold) {
-        this(indicator, new ConstantIndicator<Decimal>(threshold));
+    public OverIndicatorRule(Indicator<Num> indicator, Number threshold) {
+        this(indicator, indicator.numOf(threshold));
     }
-    
+
     /**
      * Constructor.
-     * @param first the first indicator
+     *
+     * @param indicator the indicator
+     * @param threshold a threshold
+     */
+    public OverIndicatorRule(Indicator<Num> indicator, Num threshold) {
+        this(indicator, new ConstantIndicator<Num>(indicator.getBarSeries(), threshold));
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param first  the first indicator
      * @param second the second indicator
      */
-    public OverIndicatorRule(Indicator<Decimal> first, Indicator<Decimal> second) {
+    public OverIndicatorRule(Indicator<Num> first, Indicator<Num> second) {
         this.first = first;
         this.second = second;
     }

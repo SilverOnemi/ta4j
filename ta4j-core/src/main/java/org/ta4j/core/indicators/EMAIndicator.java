@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,49 +23,26 @@
  */
 package org.ta4j.core.indicators;
 
-import org.ta4j.core.Decimal;
 import org.ta4j.core.Indicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Exponential moving average indicator.
- * <p>
+ *
+ * @see <a href=
+ *      "https://www.investopedia.com/terms/e/ema.asp">https://www.investopedia.com/terms/e/ema.asp</a>
  */
-public class EMAIndicator extends RecursiveCachedIndicator<Decimal> {
+public class EMAIndicator extends AbstractEMAIndicator {
 
-    private final Indicator<Decimal> indicator;
-
-    private final int timeFrame;
-
-    private final Decimal multiplier;
+    private static final long serialVersionUID = -3739171856534680816L;
 
     /**
      * Constructor.
+     *
      * @param indicator an indicator
-     * @param timeFrame the EMA time frame
+     * @param barCount  the EMA time frame
      */
-    public EMAIndicator(Indicator<Decimal> indicator, int timeFrame) {
-        super(indicator);
-        this.indicator = indicator;
-        this.timeFrame = timeFrame;
-        multiplier = Decimal.TWO.dividedBy(Decimal.valueOf(timeFrame + 1));
-    }
-
-    @Override
-    protected Decimal calculate(int index) {
-        if (index + 1 < timeFrame) {
-            // Starting point of the EMA
-            return new SMAIndicator(indicator, timeFrame).getValue(index);
-        }
-        if (index == 0) {
-            // If the timeframe is bigger than the indicator's value count
-            return indicator.getValue(0);
-        }
-        Decimal emaPrev = getValue(index - 1);
-        return indicator.getValue(index).minus(emaPrev).multipliedBy(multiplier).plus(emaPrev);
-    }
-    
-    @Override
-    public String toString() {
-        return getClass().getSimpleName() + " timeFrame: " + timeFrame;
+    public EMAIndicator(Indicator<Num> indicator, int barCount) {
+        super(indicator, barCount, (2.0 / (barCount + 1)));
     }
 }

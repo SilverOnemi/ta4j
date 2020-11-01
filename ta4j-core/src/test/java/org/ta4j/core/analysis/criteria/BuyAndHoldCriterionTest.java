@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,54 +25,60 @@ package org.ta4j.core.analysis.criteria;
 
 import org.junit.Test;
 import org.ta4j.core.*;
-import org.ta4j.core.mocks.MockTimeSeries;
+import org.ta4j.core.mocks.MockBarSeries;
+import org.ta4j.core.num.Num;
+
+import java.util.function.Function;
 
 import static org.junit.Assert.*;
+import static org.ta4j.core.TestUtils.assertNumEquals;
 
-public class BuyAndHoldCriterionTest {
+public class BuyAndHoldCriterionTest extends AbstractCriterionTest {
+
+    public BuyAndHoldCriterionTest(Function<Number, Num> numFunction) {
+        super((params) -> new BuyAndHoldCriterion(), numFunction);
+    }
 
     @Test
     public void calculateOnlyWithGainTrades() {
-        MockTimeSeries series = new MockTimeSeries(100, 105, 110, 100, 95, 105);
-        TradingRecord tradingRecord = new BaseTradingRecord(
-                Order.buyAt(0), Order.sellAt(2),
-                Order.buyAt(3), Order.sellAt(5));
+        MockBarSeries series = new MockBarSeries(numFunction, 100, 105, 110, 100, 95, 105);
+        TradingRecord tradingRecord = new BaseTradingRecord(Order.buyAt(0, series), Order.sellAt(2, series),
+                Order.buyAt(3, series), Order.sellAt(5, series));
 
-        AnalysisCriterion buyAndHold = new BuyAndHoldCriterion();
-        assertEquals(1.05, buyAndHold.calculate(series, tradingRecord), TATestsUtils.TA_OFFSET);
+        AnalysisCriterion buyAndHold = getCriterion();
+        assertNumEquals(1.05, buyAndHold.calculate(series, tradingRecord));
     }
 
     @Test
     public void calculateOnlyWithLossTrades() {
-        MockTimeSeries series = new MockTimeSeries(100, 95, 100, 80, 85, 70);
-        TradingRecord tradingRecord = new BaseTradingRecord(
-                Order.buyAt(0), Order.sellAt(1),
-                Order.buyAt(2), Order.sellAt(5));
+        MockBarSeries series = new MockBarSeries(numFunction, 100, 95, 100, 80, 85, 70);
+        TradingRecord tradingRecord = new BaseTradingRecord(Order.buyAt(0, series), Order.sellAt(1, series),
+                Order.buyAt(2, series), Order.sellAt(5, series));
 
-        AnalysisCriterion buyAndHold = new BuyAndHoldCriterion();
-        assertEquals(0.7, buyAndHold.calculate(series, tradingRecord), TATestsUtils.TA_OFFSET);
+        AnalysisCriterion buyAndHold = getCriterion();
+        assertNumEquals(0.7, buyAndHold.calculate(series, tradingRecord));
     }
 
     @Test
     public void calculateWithNoTrades() {
-        MockTimeSeries series = new MockTimeSeries(100, 95, 100, 80, 85, 70);
+        MockBarSeries series = new MockBarSeries(numFunction, 100, 95, 100, 80, 85, 70);
 
-        AnalysisCriterion buyAndHold = new BuyAndHoldCriterion();
-        assertEquals(0.7, buyAndHold.calculate(series, new BaseTradingRecord()), TATestsUtils.TA_OFFSET);
+        AnalysisCriterion buyAndHold = getCriterion();
+        assertNumEquals(0.7, buyAndHold.calculate(series, new BaseTradingRecord()));
     }
-    
+
     @Test
     public void calculateWithOneTrade() {
-        MockTimeSeries series = new MockTimeSeries(100, 105);
-        Trade trade = new Trade(Order.buyAt(0), Order.sellAt(1));
-        AnalysisCriterion buyAndHold = new BuyAndHoldCriterion();
-        assertEquals(105d/100, buyAndHold.calculate(series, trade), TATestsUtils.TA_OFFSET);
+        MockBarSeries series = new MockBarSeries(numFunction, 100, 105);
+        Trade trade = new Trade(Order.buyAt(0, series), Order.sellAt(1, series));
+        AnalysisCriterion buyAndHold = getCriterion();
+        assertNumEquals(105d / 100, buyAndHold.calculate(series, trade));
     }
 
     @Test
     public void betterThan() {
-        AnalysisCriterion criterion = new BuyAndHoldCriterion();
-        assertTrue(criterion.betterThan(1.3, 1.1));
-        assertFalse(criterion.betterThan(0.6, 0.9));
+        AnalysisCriterion criterion = getCriterion();
+        assertTrue(criterion.betterThan(numOf(1.3), numOf(1.1)));
+        assertFalse(criterion.betterThan(numOf(0.6), numOf(0.9)));
     }
 }

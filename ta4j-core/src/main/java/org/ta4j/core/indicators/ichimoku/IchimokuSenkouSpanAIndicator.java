@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,16 +23,18 @@
  */
 package org.ta4j.core.indicators.ichimoku;
 
-import org.ta4j.core.Decimal;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.CachedIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Ichimoku clouds: Senkou Span A (Leading Span A) indicator
- * <p>
- * @see http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:ichimoku_cloud
+ *
+ * @see <a href=
+ *      "http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:ichimoku_cloud">
+ *      http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:ichimoku_cloud</a>
  */
-public class IchimokuSenkouSpanAIndicator extends CachedIndicator<Decimal> {
+public class IchimokuSenkouSpanAIndicator extends CachedIndicator<Num> {
 
     /** The Tenkan-sen indicator */
     private final IchimokuTenkanSenIndicator conversionLine;
@@ -41,36 +44,42 @@ public class IchimokuSenkouSpanAIndicator extends CachedIndicator<Decimal> {
 
     /**
      * Constructor.
+     * 
      * @param series the series
      */
-    public IchimokuSenkouSpanAIndicator(TimeSeries series) {
+    public IchimokuSenkouSpanAIndicator(BarSeries series) {
         this(series, new IchimokuTenkanSenIndicator(series), new IchimokuKijunSenIndicator(series));
     }
-    
+
     /**
      * Constructor.
-     * @param series the series
-     * @param timeFrameConversionLine the time frame for the conversion line (usually 9)
-     * @param timeFrameBaseLine the time frame for the base line (usually 26)
+     * 
+     * @param series                 the series
+     * @param barCountConversionLine the time frame for the conversion line (usually
+     *                               9)
+     * @param barCountBaseLine       the time frame for the base line (usually 26)
      */
-    public IchimokuSenkouSpanAIndicator(TimeSeries series, int timeFrameConversionLine, int timeFrameBaseLine) {
-        this(series, new IchimokuTenkanSenIndicator(series, timeFrameConversionLine), new IchimokuKijunSenIndicator(series, timeFrameBaseLine));
+    public IchimokuSenkouSpanAIndicator(BarSeries series, int barCountConversionLine, int barCountBaseLine) {
+        this(series, new IchimokuTenkanSenIndicator(series, barCountConversionLine),
+                new IchimokuKijunSenIndicator(series, barCountBaseLine));
     }
-    
+
     /**
      * Constructor.
-     * @param series the series
+     * 
+     * @param series         the series
      * @param conversionLine the conversion line
-     * @param baseLine the base line
+     * @param baseLine       the base line
      */
-    public IchimokuSenkouSpanAIndicator(TimeSeries series, IchimokuTenkanSenIndicator conversionLine, IchimokuKijunSenIndicator baseLine) {
+    public IchimokuSenkouSpanAIndicator(BarSeries series, IchimokuTenkanSenIndicator conversionLine,
+            IchimokuKijunSenIndicator baseLine) {
         super(series);
         this.conversionLine = conversionLine;
         this.baseLine = baseLine;
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        return conversionLine.getValue(index).plus(baseLine.getValue(index)).dividedBy(Decimal.TWO);
+    protected Num calculate(int index) {
+        return conversionLine.getValue(index).plus(baseLine.getValue(index)).dividedBy(numOf(2));
     }
 }

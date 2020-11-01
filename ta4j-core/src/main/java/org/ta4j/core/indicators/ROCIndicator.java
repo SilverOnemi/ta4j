@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,39 +23,47 @@
  */
 package org.ta4j.core.indicators;
 
-import org.ta4j.core.Decimal;
 import org.ta4j.core.Indicator;
+import org.ta4j.core.num.Num;
 
 /**
- * Rate of change (ROCIndicator) indicator.
- * Aka. Momentum
- * <p>
- * The ROCIndicator calculation compares the current value with the value "n" periods ago.
+ * Rate of change (ROCIndicator) indicator. Aka. Momentum
+ *
+ * The ROCIndicator calculation compares the current value with the value "n"
+ * periods ago.
+ *
+ * @see <a href=
+ *      "https://www.investopedia.com/terms/p/pricerateofchange.asp">https://www.investopedia.com/terms/p/pricerateofchange.asp</a>
  */
-public class ROCIndicator extends CachedIndicator<Decimal> {
+public class ROCIndicator extends CachedIndicator<Num> {
 
-    private final Indicator<Decimal> indicator;
+    private static final long serialVersionUID = 7983097470035346856L;
 
-    private final int timeFrame;
+    private final Indicator<Num> indicator;
+    private final int barCount;
 
-    public ROCIndicator(Indicator<Decimal> indicator, int timeFrame) {
+    /**
+     * Constructor.
+     *
+     * @param indicator the indicator
+     * @param barCount  the time frame
+     */
+    public ROCIndicator(Indicator<Num> indicator, int barCount) {
         super(indicator);
         this.indicator = indicator;
-        this.timeFrame = timeFrame;
+        this.barCount = barCount;
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        int nIndex = Math.max(index - timeFrame, 0);
-        Decimal nPeriodsAgoValue = indicator.getValue(nIndex);
-        Decimal currentValue = indicator.getValue(index);
-        return currentValue.minus(nPeriodsAgoValue)
-                .dividedBy(nPeriodsAgoValue)
-                .multipliedBy(Decimal.HUNDRED);
+    protected Num calculate(int index) {
+        int nIndex = Math.max(index - barCount, 0);
+        Num nPeriodsAgoValue = indicator.getValue(nIndex);
+        Num currentValue = indicator.getValue(index);
+        return currentValue.minus(nPeriodsAgoValue).dividedBy(nPeriodsAgoValue).multipliedBy(numOf(100));
     }
-    
+
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " timeFrame: " + timeFrame;
+        return getClass().getSimpleName() + " barCount: " + barCount;
     }
 }

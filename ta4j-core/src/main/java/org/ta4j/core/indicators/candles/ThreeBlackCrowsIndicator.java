@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,42 +23,48 @@
  */
 package org.ta4j.core.indicators.candles;
 
-import org.ta4j.core.Decimal;
-import org.ta4j.core.Tick;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.Bar;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.CachedIndicator;
 import org.ta4j.core.indicators.SMAIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Three black crows indicator.
- * <p>
- * @see http://www.investopedia.com/terms/t/three_black_crows.asp
+ *
+ * @see <a href="http://www.investopedia.com/terms/t/three_black_crows.asp">
+ *      http://www.investopedia.com/terms/t/three_black_crows.asp</a>
  */
 public class ThreeBlackCrowsIndicator extends CachedIndicator<Boolean> {
 
-    private final TimeSeries series;
-    
-    /** Lower shadow */
+    /**
+     * Lower shadow
+     */
     private final LowerShadowIndicator lowerShadowInd;
-    /** Average lower shadow */
+    /**
+     * Average lower shadow
+     */
     private final SMAIndicator averageLowerShadowInd;
-    /** Factor used when checking if a candle has a very short lower shadow */
-    private final Decimal factor;
-    
+    /**
+     * Factor used when checking if a candle has a very short lower shadow
+     */
+    private final Num factor;
+
     private int whiteCandleIndex = -1;
-    
+
     /**
      * Constructor.
-     * @param series a time series
-     * @param timeFrame the number of ticks used to calculate the average lower shadow
-     * @param factor the factor used when checking if a candle has a very short lower shadow
+     *
+     * @param series   the bar series
+     * @param barCount the number of bars used to calculate the average lower shadow
+     * @param factor   the factor used when checking if a candle has a very short
+     *                 lower shadow
      */
-    public ThreeBlackCrowsIndicator(TimeSeries series, int timeFrame, Decimal factor) {
+    public ThreeBlackCrowsIndicator(BarSeries series, int barCount, double factor) {
         super(series);
-        this.series = series;
         lowerShadowInd = new LowerShadowIndicator(series);
-        averageLowerShadowInd = new SMAIndicator(lowerShadowInd, timeFrame);
-        this.factor = factor;
+        averageLowerShadowInd = new SMAIndicator(lowerShadowInd, barCount);
+        this.factor = numOf(factor);
     }
 
     @Override
@@ -67,54 +74,51 @@ public class ThreeBlackCrowsIndicator extends CachedIndicator<Boolean> {
             return false;
         }
         whiteCandleIndex = index - 3;
-        return series.getTick(whiteCandleIndex).isBullish()
-                && isBlackCrow(index - 2)
-                && isBlackCrow(index - 1)
+        return getBarSeries().getBar(whiteCandleIndex).isBullish() && isBlackCrow(index - 2) && isBlackCrow(index - 1)
                 && isBlackCrow(index);
     }
-    
+
     /**
-     * @param index the tick/candle index
-     * @return true if the tick/candle has a very short lower shadow, false otherwise
+     * @param index the bar/candle index
+     * @return true if the bar/candle has a very short lower shadow, false otherwise
      */
     private boolean hasVeryShortLowerShadow(int index) {
-        Decimal currentLowerShadow = lowerShadowInd.getValue(index);
+        Num currentLowerShadow = lowerShadowInd.getValue(index);
         // We use the white candle index to remove to bias of the previous crows
-        Decimal averageLowerShadow = averageLowerShadowInd.getValue(whiteCandleIndex);
-        
+        Num averageLowerShadow = averageLowerShadowInd.getValue(whiteCandleIndex);
+
         return currentLowerShadow.isLessThan(averageLowerShadow.multipliedBy(factor));
     }
-    
+
     /**
-     * @param index the current tick/candle index
-     * @return true if the current tick/candle is declining, false otherwise
+     * @param index the current bar/candle index
+     * @return true if the current bar/candle is declining, false otherwise
      */
     private boolean isDeclining(int index) {
-        Tick prevTick = series.getTick(index-1);
-        Tick currTick = series.getTick(index);
-        final Decimal prevOpenPrice = prevTick.getOpenPrice();
-        final Decimal prevClosePrice = prevTick.getClosePrice();
-        final Decimal currOpenPrice = currTick.getOpenPrice();
-        final Decimal currClosePrice = currTick.getClosePrice();
-        
+        Bar prevBar = getBarSeries().getBar(index - 1);
+        Bar currBar = getBarSeries().getBar(index);
+        final Num prevOpenPrice = prevBar.getOpenPrice();
+        final Num prevClosePrice = prevBar.getClosePrice();
+        final Num currOpenPrice = currBar.getOpenPrice();
+        final Num currClosePrice = currBar.getClosePrice();
+
         // Opens within the body of the previous candle
         return currOpenPrice.isLessThan(prevOpenPrice) && currOpenPrice.isGreaterThan(prevClosePrice)
-                // Closes below the previous close price
+        // Closes below the previous close price
                 && currClosePrice.isLessThan(prevClosePrice);
     }
-    
+
     /**
-     * @param index the current tick/candle index
-     * @return true if the current tick/candle is a black crow, false otherwise
+     * @param index the current bar/candle index
+     * @return true if the current bar/candle is a black crow, false otherwise
      */
     private boolean isBlackCrow(int index) {
-        Tick prevTick = series.getTick(index-1);
-        Tick currTick = series.getTick(index);
-        if (currTick.isBearish()) {
-            if (prevTick.isBullish()) {
+        Bar prevBar = getBarSeries().getBar(index - 1);
+        Bar currBar = getBarSeries().getBar(index);
+        if (currBar.isBearish()) {
+            if (prevBar.isBullish()) {
                 // First crow case
-                return hasVeryShortLowerShadow(index)
-                        && currTick.getOpenPrice().isLessThan(prevTick.getMaxPrice());
+                return hasVeryShortLowerShadow(index) && currBar.getOpenPrice().isLessThan(prevBar.getHighPrice());
             } else {
                 return hasVeryShortLowerShadow(index) && isDeclining(index);
             }

@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -32,24 +33,23 @@ public class BooleanRuleTest {
 
     private BooleanRule satisfiedRule;
     private BooleanRule unsatisfiedRule;
-    
+
     @Before
     public void setUp() {
         satisfiedRule = new BooleanRule(true);
         unsatisfiedRule = new BooleanRule(false);
     }
-    
+
     @Test
     public void isSatisfied() {
         assertTrue(satisfiedRule.isSatisfied(0));
         assertTrue(satisfiedRule.isSatisfied(1));
         assertTrue(satisfiedRule.isSatisfied(2));
         assertTrue(satisfiedRule.isSatisfied(10));
-        
+
         assertFalse(unsatisfiedRule.isSatisfied(0));
         assertFalse(unsatisfiedRule.isSatisfied(1));
         assertFalse(unsatisfiedRule.isSatisfied(2));
         assertFalse(unsatisfiedRule.isSatisfied(10));
     }
 }
-        

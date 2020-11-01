@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,48 +23,53 @@
  */
 package org.ta4j.core.analysis.criteria;
 
-import org.ta4j.core.Decimal;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.Trade;
 import org.ta4j.core.TradingRecord;
+import org.ta4j.core.num.Num;
 
 /**
  * Total profit criterion.
- * <p>
- * The total profit of the provided {@link Trade trade(s)} over the provided {@link TimeSeries series}.
+ *
+ * The total profit of the provided {@link Trade trade(s)} over the provided
+ * {@link BarSeries series}.
  */
 public class TotalProfitCriterion extends AbstractAnalysisCriterion {
 
     @Override
-    public double calculate(TimeSeries series, TradingRecord tradingRecord) {
-        double value = 1d;
-        for (Trade trade : tradingRecord.getTrades()) {
-            value *= calculateProfit(series, trade);
-        }
-        return value;
+    public Num calculate(BarSeries series, TradingRecord tradingRecord) {
+        return tradingRecord.getTrades().stream().map(trade -> calculateProfit(series, trade)).reduce(series.numOf(1),
+                Num::multipliedBy);
     }
 
     @Override
-    public double calculate(TimeSeries series, Trade trade) {
+    public Num calculate(BarSeries series, Trade trade) {
         return calculateProfit(series, trade);
     }
 
     @Override
-    public boolean betterThan(double criterionValue1, double criterionValue2) {
-        return criterionValue1 > criterionValue2;
+    public boolean betterThan(Num criterionValue1, Num criterionValue2) {
+        return criterionValue1.isGreaterThan(criterionValue2);
     }
 
     /**
      * Calculates the profit of a trade (Buy and sell).
-     * @param series a time series
-     * @param trade a trade
+     *
+     * @param series a bar series
+     * @param trade  a trade
      * @return the profit of the trade
      */
-    private double calculateProfit(TimeSeries series, Trade trade) {
-        Decimal profit = Decimal.ONE;
+    private Num calculateProfit(BarSeries series, Trade trade) {
+        Num profit = series.numOf(1);
         if (trade.isClosed()) {
-            Decimal exitClosePrice = series.getTick(trade.getExit().getIndex()).getClosePrice();
-            Decimal entryClosePrice = series.getTick(trade.getEntry().getIndex()).getClosePrice();
+            // use price of entry/exit order, if NaN use close price of underlying time
+            // series
+            Num exitClosePrice = trade.getExit().getNetPrice().isNaN()
+                    ? series.getBar(trade.getExit().getIndex()).getClosePrice()
+                    : trade.getExit().getNetPrice();
+            Num entryClosePrice = trade.getEntry().getNetPrice().isNaN()
+                    ? series.getBar(trade.getEntry().getIndex()).getClosePrice()
+                    : trade.getEntry().getNetPrice();
 
             if (trade.getEntry().isBuy()) {
                 profit = exitClosePrice.dividedBy(entryClosePrice);
@@ -71,6 +77,6 @@ public class TotalProfitCriterion extends AbstractAnalysisCriterion {
                 profit = entryClosePrice.dividedBy(exitClosePrice);
             }
         }
-        return profit.toDouble();
+        return profit;
     }
 }

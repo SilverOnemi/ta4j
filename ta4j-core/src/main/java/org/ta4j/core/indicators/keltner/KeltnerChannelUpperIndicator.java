@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,32 +23,37 @@
  */
 package org.ta4j.core.indicators.keltner;
 
-import org.ta4j.core.Decimal;
+import org.ta4j.core.indicators.ATRIndicator;
 import org.ta4j.core.indicators.CachedIndicator;
-import org.ta4j.core.indicators.helpers.AverageTrueRangeIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Keltner Channel (upper line) indicator
- * @see http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:keltner_channels
+ *
+ * @see <a href=
+ *      "http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:keltner_channels">
+ *      http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:keltner_channels</a>
  */
-public class KeltnerChannelUpperIndicator extends CachedIndicator<Decimal> {
+public class KeltnerChannelUpperIndicator extends CachedIndicator<Num> {
 
-    private final AverageTrueRangeIndicator averageTrueRangeIndicator;
+    private final ATRIndicator averageTrueRangeIndicator;
 
     private final KeltnerChannelMiddleIndicator keltnerMiddleIndicator;
 
-    private final Decimal ratio;
+    private final Num ratio;
 
-    public KeltnerChannelUpperIndicator(KeltnerChannelMiddleIndicator keltnerMiddleIndicator, Decimal ratio, int timeFrameATR) {
+    public KeltnerChannelUpperIndicator(KeltnerChannelMiddleIndicator keltnerMiddleIndicator, double ratio,
+            int barCountATR) {
         super(keltnerMiddleIndicator);
-        this.ratio = ratio;
+        this.ratio = numOf(ratio);
         this.keltnerMiddleIndicator = keltnerMiddleIndicator;
-        averageTrueRangeIndicator = new AverageTrueRangeIndicator(keltnerMiddleIndicator.getTimeSeries(), timeFrameATR);
+        averageTrueRangeIndicator = new ATRIndicator(keltnerMiddleIndicator.getBarSeries(), barCountATR);
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        return keltnerMiddleIndicator.getValue(index).plus(ratio.multipliedBy(averageTrueRangeIndicator.getValue(index)));
+    protected Num calculate(int index) {
+        return keltnerMiddleIndicator.getValue(index)
+                .plus(ratio.multipliedBy(averageTrueRangeIndicator.getValue(index)));
     }
 
 }

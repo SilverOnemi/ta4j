@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -25,8 +26,14 @@ package org.ta4j.core;
 import org.junit.Before;
 import org.junit.Test;
 import org.ta4j.core.Order.OrderType;
+import org.ta4j.core.cost.CostModel;
+import org.ta4j.core.cost.LinearTransactionCostModel;
+import org.ta4j.core.num.DoubleNum;
+import org.ta4j.core.num.Num;
 
 import static org.junit.Assert.*;
+import static org.ta4j.core.num.NaN.NaN;
+import static org.ta4j.core.TestUtils.assertNumEquals;
 
 public class OrderTest {
 
@@ -34,11 +41,11 @@ public class OrderTest {
 
     @Before
     public void setUp() {
-        opEquals1 = Order.buyAt(1);
-        opEquals2 = Order.buyAt(1);
+        opEquals1 = Order.buyAt(1, NaN, NaN);
+        opEquals2 = Order.buyAt(1, NaN, NaN);
 
-        opNotEquals1 = Order.sellAt(1);
-        opNotEquals2 = Order.buyAt(2);
+        opNotEquals1 = Order.sellAt(1, NaN, NaN);
+        opNotEquals2 = Order.buyAt(2, NaN, NaN);
     }
 
     @Test
@@ -57,5 +64,21 @@ public class OrderTest {
 
         assertNotEquals(opEquals1.toString(), opNotEquals1.toString());
         assertNotEquals(opEquals1.toString(), opNotEquals2.toString());
+    }
+
+    @Test
+    public void initializeWithCostsTest() {
+        CostModel transactionCostModel = new LinearTransactionCostModel(0.05);
+        Order order = new Order(0, OrderType.BUY, DoubleNum.valueOf(100), DoubleNum.valueOf(20), transactionCostModel);
+        Num expectedCost = DoubleNum.valueOf(100);
+        Num expectedValue = DoubleNum.valueOf(2000);
+        Num expectedRawPrice = DoubleNum.valueOf(100);
+        Num expectedNetPrice = DoubleNum.valueOf(105);
+
+        assertNumEquals(expectedCost, order.getCost());
+        assertNumEquals(expectedValue, order.getValue());
+        assertNumEquals(expectedRawPrice, order.getPricePerAsset());
+        assertNumEquals(expectedNetPrice, order.getNetPrice());
+        assertTrue(transactionCostModel.equals(order.getCostModel()));
     }
 }

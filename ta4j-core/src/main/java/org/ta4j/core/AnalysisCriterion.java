@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,11 +23,13 @@
  */
 package org.ta4j.core;
 
+import org.ta4j.core.num.Num;
+
 import java.util.List;
 
 /**
  * An analysis criterion.
- * <p>
+ *
  * Can be used to:
  * <ul>
  * <li>Analyze the performance of a {@link Strategy strategy}
@@ -36,45 +39,51 @@ import java.util.List;
 public interface AnalysisCriterion {
 
     /**
-     * @param series a time series
-     * @param trade a trade
+     * @param series a bar series, not null
+     * @param trade  a trade, not null
      * @return the criterion value for the trade
      */
-    double calculate(TimeSeries series, Trade trade);
+    Num calculate(BarSeries series, Trade trade);
 
     /**
-     * @param series a time series
-     * @param tradingRecord a trading record
+     * @param series        a bar series, not null
+     * @param tradingRecord a trading record, not null
      * @return the criterion value for the trades
      */
-    double calculate(TimeSeries series, TradingRecord tradingRecord);
+    Num calculate(BarSeries series, TradingRecord tradingRecord);
 
     /**
-     * @param manager the time series manager
+     * @param manager    the bar series manager
      * @param strategies a list of strategies
-     * @return the best strategy (among the provided ones) according to the criterion
+     * @return the best strategy (among the provided ones) according to the
+     *         criterion
      */
-    default Strategy chooseBest(TimeSeriesManager manager, List<Strategy> strategies) {
+    default Strategy chooseBest(BarSeriesManager manager, List<Strategy> strategies) {
 
         Strategy bestStrategy = strategies.get(0);
-        double bestCriterionValue = calculate(manager.getTimeSeries(), manager.run(bestStrategy));
+        Num bestCriterionValue = calculate(manager.getBarSeries(), manager.run(bestStrategy));
 
         for (int i = 1; i < strategies.size(); i++) {
             Strategy currentStrategy = strategies.get(i);
-            double currentCriterionValue = calculate(manager.getTimeSeries(), manager.run(currentStrategy));
+            Num currentCriterionValue = calculate(manager.getBarSeries(), manager.run(currentStrategy));
 
             if (betterThan(currentCriterionValue, bestCriterionValue)) {
                 bestStrategy = currentStrategy;
                 bestCriterionValue = currentCriterionValue;
             }
         }
+
         return bestStrategy;
     }
 
     /**
      * @param criterionValue1 the first value
-     * @param criterionValue2 the second value
-     * @return true if the first value is better than (according to the criterion) the second one, false otherwise
+     * @param criterionValue2
+     * 
+     * 
+     *                        the second value
+     * @return true if the first value is better than (according to the criterion)
+     *         the second one, false otherwise
      */
-    boolean betterThan(double criterionValue1, double criterionValue2);
+    boolean betterThan(Num criterionValue1, Num criterionValue2);
 }

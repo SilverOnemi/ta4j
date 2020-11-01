@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,18 +23,19 @@
  */
 package org.ta4j.core.indicators.helpers;
 
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.AbstractIndicator;
 
 /**
  * Constant indicator.
- * <p>
  */
 public class ConstantIndicator<T> extends AbstractIndicator<T> {
 
-    private T value;
+    private static final long serialVersionUID = -186917236870375024L;
+    private final T value;
 
-    public ConstantIndicator(T t) {
-        super(null);
+    public ConstantIndicator(BarSeries series, T t) {
+        super(series);
         this.value = t;
     }
 

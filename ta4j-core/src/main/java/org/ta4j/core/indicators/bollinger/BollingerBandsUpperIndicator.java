@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,48 +23,67 @@
  */
 package org.ta4j.core.indicators.bollinger;
 
-import org.ta4j.core.Decimal;
 import org.ta4j.core.Indicator;
 import org.ta4j.core.indicators.CachedIndicator;
+import org.ta4j.core.num.Num;
 
 /**
- * Buy - Occurs when the price line cross from down to up de Bollinger Band Low.
- * Sell - Occurs when the price line cross from up to down de Bollinger Band High.
+ * Buy - Occurs when the price line crosses from below to above the Lower
+ * Bollinger Band. Sell - Occurs when the price line crosses from above to below
+ * the Upper Bollinger Band.
  * 
  */
-public class BollingerBandsUpperIndicator extends CachedIndicator<Decimal> {
+public class BollingerBandsUpperIndicator extends CachedIndicator<Num> {
 
-    private final Indicator<Decimal> indicator;
+    private final Indicator<Num> deviation;
 
     private final BollingerBandsMiddleIndicator bbm;
 
-    private final Decimal k;
+    private final Num k;
 
-    public BollingerBandsUpperIndicator(BollingerBandsMiddleIndicator bbm, Indicator<Decimal> indicator) {
-        this(bbm, indicator, Decimal.TWO);
+    /**
+     * Constructor. Defaults k value to 2.
+     * 
+     * @param bbm       the middle band Indicator. Typically an SMAIndicator is
+     *                  used.
+     * @param deviation the deviation above and below the middle, factored by k.
+     *                  Typically a StandardDeviationIndicator is used.
+     */
+    public BollingerBandsUpperIndicator(BollingerBandsMiddleIndicator bbm, Indicator<Num> deviation) {
+        this(bbm, deviation, bbm.getBarSeries().numOf(2));
     }
 
-    public BollingerBandsUpperIndicator(BollingerBandsMiddleIndicator bbm, Indicator<Decimal> indicator, Decimal k) {
-        super(indicator);
+    /**
+     * Constructor.
+     * 
+     * @param bbm       the middle band Indicator. Typically an SMAIndicator is
+     *                  used.
+     * @param deviation the deviation above and below the middle, factored by k.
+     *                  Typically a StandardDeviationIndicator is used.
+     * @param k         the scaling factor to multiply the deviation by. Typically
+     *                  2.
+     */
+    public BollingerBandsUpperIndicator(BollingerBandsMiddleIndicator bbm, Indicator<Num> deviation, Num k) {
+        super(deviation);
         this.bbm = bbm;
-        this.indicator = indicator;
+        this.deviation = deviation;
         this.k = k;
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        return bbm.getValue(index).plus(indicator.getValue(index).multipliedBy(k));
+    protected Num calculate(int index) {
+        return bbm.getValue(index).plus(deviation.getValue(index).multipliedBy(k));
     }
 
     /**
      * @return the K multiplier
      */
-    public Decimal getK() {
+    public Num getK() {
         return k;
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "deviation: " + indicator + "series" + bbm;
+        return getClass().getSimpleName() + "k: " + k + "deviation: " + deviation + "series" + bbm;
     }
 }

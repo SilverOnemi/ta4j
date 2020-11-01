@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,24 +25,25 @@ package org.ta4j.core.trading.rules;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ta4j.core.Decimal;
+import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.Indicator;
 import org.ta4j.core.indicators.helpers.FixedDecimalIndicator;
+import org.ta4j.core.num.Num;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class CrossedUpIndicatorRuleTest {
 
-    private Indicator<Decimal> evaluatedIndicator;
     private CrossedUpIndicatorRule rule;
-    
+
     @Before
     public void setUp() {
-        evaluatedIndicator = new FixedDecimalIndicator(8, 9, 10, 12, 9, 11, 12, 13);
-        rule = new CrossedUpIndicatorRule(evaluatedIndicator, Decimal.TEN);
+        Indicator<Num> evaluatedIndicator = new FixedDecimalIndicator(new BaseBarSeries(), 8d, 9d, 10d, 12d, 9d, 11d,
+                12d, 13d);
+        rule = new CrossedUpIndicatorRule(evaluatedIndicator, 10);
     }
-    
+
     @Test
     public void isSatisfied() {
         assertFalse(rule.isSatisfied(0));
@@ -54,4 +56,3 @@ public class CrossedUpIndicatorRuleTest {
         assertFalse(rule.isSatisfied(7));
     }
 }
-        

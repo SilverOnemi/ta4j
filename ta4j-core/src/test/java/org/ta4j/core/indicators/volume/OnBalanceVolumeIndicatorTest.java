@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,48 +24,56 @@
 package org.ta4j.core.indicators.volume;
 
 import org.junit.Test;
-import org.ta4j.core.Tick;
-import org.ta4j.core.mocks.MockTick;
-import org.ta4j.core.mocks.MockTimeSeries;
+import org.ta4j.core.Bar;
+import org.ta4j.core.Indicator;
+import org.ta4j.core.indicators.AbstractIndicatorTest;
+import org.ta4j.core.mocks.MockBar;
+import org.ta4j.core.mocks.MockBarSeries;
+import org.ta4j.core.num.Num;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
-import static org.ta4j.core.TATestsUtils.assertDecimalEquals;
+import static org.ta4j.core.TestUtils.assertNumEquals;
 
-public class OnBalanceVolumeIndicatorTest {
+public class OnBalanceVolumeIndicatorTest extends AbstractIndicatorTest<Indicator<Num>, Num> {
+
+    public OnBalanceVolumeIndicatorTest(Function<Number, Num> numFunction) {
+        super(numFunction);
+    }
 
     @Test
     public void getValue() {
         ZonedDateTime now = ZonedDateTime.now();
-        List<Tick> ticks = new ArrayList<>();
-        ticks.add(new MockTick(now, 0, 10, 0, 0, 0, 4, 0));
-        ticks.add(new MockTick(now, 0, 5, 0, 0, 0, 2, 0));
-        ticks.add(new MockTick(now, 0, 6, 0, 0, 0, 3, 0));
-        ticks.add(new MockTick(now, 0, 7, 0, 0, 0, 8, 0));
-        ticks.add(new MockTick(now, 0, 7, 0, 0, 0, 6, 0));
-        ticks.add(new MockTick(now, 0, 6, 0, 0, 0, 10, 0));
+        List<Bar> bars = new ArrayList<>();
+        bars.add(new MockBar(now, 0, 10, 0, 0, 0, 4, 0, numFunction));
+        bars.add(new MockBar(now, 0, 5, 0, 0, 0, 2, 0, numFunction));
+        bars.add(new MockBar(now, 0, 6, 0, 0, 0, 3, 0, numFunction));
+        bars.add(new MockBar(now, 0, 7, 0, 0, 0, 8, 0, numFunction));
+        bars.add(new MockBar(now, 0, 7, 0, 0, 0, 6, 0, numFunction));
+        bars.add(new MockBar(now, 0, 6, 0, 0, 0, 10, 0, numFunction));
 
-        OnBalanceVolumeIndicator obv = new OnBalanceVolumeIndicator(new MockTimeSeries(ticks));
-        assertDecimalEquals(obv.getValue(0), 0);
-        assertDecimalEquals(obv.getValue(1), -2);
-        assertDecimalEquals(obv.getValue(2), 1);
-        assertDecimalEquals(obv.getValue(3), 9);
-        assertDecimalEquals(obv.getValue(4), 9);
-        assertDecimalEquals(obv.getValue(5), -1);
+        OnBalanceVolumeIndicator obv = new OnBalanceVolumeIndicator(new MockBarSeries(bars));
+        assertNumEquals(0, obv.getValue(0));
+        assertNumEquals(-2, obv.getValue(1));
+        assertNumEquals(1, obv.getValue(2));
+        assertNumEquals(9, obv.getValue(3));
+        assertNumEquals(9, obv.getValue(4));
+        assertNumEquals(-1, obv.getValue(5));
     }
-    
+
     @Test
     public void stackOverflowError() {
-        List<Tick> bigListOfTicks = new ArrayList<Tick>();
+        List<Bar> bigListOfBars = new ArrayList<Bar>();
         for (int i = 0; i < 10000; i++) {
-            bigListOfTicks.add(new MockTick(i));
+            bigListOfBars.add(new MockBar(i, numFunction));
         }
-        MockTimeSeries bigSeries = new MockTimeSeries(bigListOfTicks);
+        MockBarSeries bigSeries = new MockBarSeries(bigListOfBars);
         OnBalanceVolumeIndicator obv = new OnBalanceVolumeIndicator(bigSeries);
         // If a StackOverflowError is thrown here, then the RecursiveCachedIndicator
         // does not work as intended.
-        assertDecimalEquals(obv.getValue(9999), 0);
+        assertNumEquals(0, obv.getValue(9999));
     }
 }

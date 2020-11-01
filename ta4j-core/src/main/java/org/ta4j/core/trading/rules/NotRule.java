@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -27,26 +28,31 @@ import org.ta4j.core.TradingRecord;
 
 /**
  * An opposite (logical operator: NOT) rule.
- * <p>
+ *
  * Satisfied when provided rule is not satisfied.<br>
  * Not satisfied when provided rule is satisfied.
  */
 public class NotRule extends AbstractRule {
 
-    private Rule rule;
+    private final Rule ruleToNegate;
 
     /**
      * Constructor.
-     * @param rule a trading rule
+     *
+     * @param ruleToNegate a trading rule to negate
      */
-    public NotRule(Rule rule) {
-        this.rule = rule;
+    public NotRule(Rule ruleToNegate) {
+        this.ruleToNegate = ruleToNegate;
     }
 
     @Override
     public boolean isSatisfied(int index, TradingRecord tradingRecord) {
-        final boolean satisfied = !rule.isSatisfied(index, tradingRecord);
+        final boolean satisfied = !ruleToNegate.isSatisfied(index, tradingRecord);
         traceIsSatisfied(index, satisfied);
         return satisfied;
+    }
+
+    public Rule getRuleToNegate() {
+        return ruleToNegate;
     }
 }

@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,31 +23,34 @@
  */
 package org.ta4j.core.indicators.helpers;
 
-
-import org.ta4j.core.Decimal;
-import org.ta4j.core.Tick;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.Bar;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.CachedIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Close Location Value (CLV) indicator.
- * <p>
- * @see http://www.investopedia.com/terms/c/close_location_value.asp
+ *
+ * @see <a href="http://www.investopedia.com/terms/c/close_location_value.asp">
+ *      http://www.investopedia.com/terms/c/close_location_value.asp</a>
  */
-public class CloseLocationValueIndicator extends CachedIndicator<Decimal> {
+public class CloseLocationValueIndicator extends CachedIndicator<Num> {
 
-    private TimeSeries series;
+    private final Num zero = numOf(0);
 
-    public CloseLocationValueIndicator(TimeSeries series) {
+    public CloseLocationValueIndicator(BarSeries series) {
         super(series);
-        this.series = series;
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        Tick tick = series.getTick(index);
+    protected Num calculate(int index) {
+        final Bar bar = getBarSeries().getBar(index);
+        final Num low = bar.getLowPrice();
+        final Num high = bar.getHighPrice();
+        final Num close = bar.getClosePrice();
 
-        return ((tick.getClosePrice().minus(tick.getMinPrice())).minus(tick.getMaxPrice().minus(tick.getClosePrice())))
-                 .dividedBy(tick.getMaxPrice().minus(tick.getMinPrice()));
+        final Num diffHighLow = high.minus(low);
+
+        return (diffHighLow.isNaN() || diffHighLow.isZero()) ? zero : ((close.minus(low)).minus(high.minus(close))).dividedBy(diffHighLow);
     }
 }

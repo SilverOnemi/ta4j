@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -33,13 +34,17 @@ public abstract class AbstractRule implements Rule {
 
     /** The logger */
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    
+
+    /** The class name */
+    private final String className = getClass().getSimpleName();
+
     /**
      * Traces the isSatisfied() method calls.
-     * @param index the tick index
+     * 
+     * @param index       the bar index
      * @param isSatisfied true if the rule is satisfied, false otherwise
      */
     protected void traceIsSatisfied(int index, boolean isSatisfied) {
-        log.trace("{}#isSatisfied({}): {}", getClass().getSimpleName(), index, isSatisfied);
+        log.trace("{}#isSatisfied({}): {}", className, index, isSatisfied);
     }
 }

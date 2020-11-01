@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,44 +24,52 @@
 package org.ta4j.core.indicators.volume;
 
 import org.junit.Test;
-import org.ta4j.core.Tick;
-import org.ta4j.core.TimeSeries;
-import org.ta4j.core.mocks.MockTick;
-import org.ta4j.core.mocks.MockTimeSeries;
+import org.ta4j.core.Bar;
+import org.ta4j.core.Indicator;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.indicators.AbstractIndicatorTest;
+import org.ta4j.core.mocks.MockBar;
+import org.ta4j.core.mocks.MockBarSeries;
+import org.ta4j.core.num.Num;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
-import static org.ta4j.core.TATestsUtils.assertDecimalEquals;
+import static org.ta4j.core.TestUtils.assertNumEquals;
 
-public class PVIIndicatorTest {
+public class PVIIndicatorTest extends AbstractIndicatorTest<Indicator<Num>, Num> {
+
+    public PVIIndicatorTest(Function<Number, Num> numFunction) {
+        super(numFunction);
+    }
 
     @Test
     public void getValue() {
 
-        List<Tick> ticks = new ArrayList<Tick>();
-        ticks.add(new MockTick(1355.69, 2739.55));
-        ticks.add(new MockTick(1325.51, 3119.46));
-        ticks.add(new MockTick(1335.02, 3466.88));
-        ticks.add(new MockTick(1313.72, 2577.12));
-        ticks.add(new MockTick(1319.99, 2480.45));
-        ticks.add(new MockTick(1331.85, 2329.79));
-        ticks.add(new MockTick(1329.04, 2793.07));
-        ticks.add(new MockTick(1362.16, 3378.78));
-        ticks.add(new MockTick(1365.51, 2417.59));
-        ticks.add(new MockTick(1374.02, 1442.81));
-        TimeSeries series = new MockTimeSeries(ticks);
+        List<Bar> bars = new ArrayList<Bar>();
+        bars.add(new MockBar(1355.69, 2739.55, numFunction));
+        bars.add(new MockBar(1325.51, 3119.46, numFunction));
+        bars.add(new MockBar(1335.02, 3466.88, numFunction));
+        bars.add(new MockBar(1313.72, 2577.12, numFunction));
+        bars.add(new MockBar(1319.99, 2480.45, numFunction));
+        bars.add(new MockBar(1331.85, 2329.79, numFunction));
+        bars.add(new MockBar(1329.04, 2793.07, numFunction));
+        bars.add(new MockBar(1362.16, 3378.78, numFunction));
+        bars.add(new MockBar(1365.51, 2417.59, numFunction));
+        bars.add(new MockBar(1374.02, 1442.81, numFunction));
+        BarSeries series = new MockBarSeries(bars);
 
         PVIIndicator pvi = new PVIIndicator(series);
-        assertDecimalEquals(pvi.getValue(0), 1000);
-        assertDecimalEquals(pvi.getValue(1), 977.7383);
-        assertDecimalEquals(pvi.getValue(2), 984.7532);
-        assertDecimalEquals(pvi.getValue(3), 984.7532);
-        assertDecimalEquals(pvi.getValue(4), 984.7532);
-        assertDecimalEquals(pvi.getValue(5), 984.7532);
-        assertDecimalEquals(pvi.getValue(6), 982.6755);
-        assertDecimalEquals(pvi.getValue(7), 1007.164);
-        assertDecimalEquals(pvi.getValue(8), 1007.164);
-        assertDecimalEquals(pvi.getValue(9), 1007.164);
+        assertNumEquals(1000, pvi.getValue(0));
+        assertNumEquals(977.7383, pvi.getValue(1));
+        assertNumEquals(984.7532, pvi.getValue(2));
+        assertNumEquals(984.7532, pvi.getValue(3));
+        assertNumEquals(984.7532, pvi.getValue(4));
+        assertNumEquals(984.7532, pvi.getValue(5));
+        assertNumEquals(982.6755, pvi.getValue(6));
+        assertNumEquals(1007.164, pvi.getValue(7));
+        assertNumEquals(1007.164, pvi.getValue(8));
+        assertNumEquals(1007.164, pvi.getValue(9));
     }
 }

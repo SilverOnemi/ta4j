@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,24 +25,26 @@ package org.ta4j.core.trading.rules;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ta4j.core.Decimal;
+import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.Indicator;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.helpers.FixedDecimalIndicator;
+import org.ta4j.core.num.Num;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class OverIndicatorRuleTest {
 
-    private Indicator<Decimal> indicator;
     private OverIndicatorRule rule;
-    
+
     @Before
     public void setUp() {
-        indicator = new FixedDecimalIndicator(20, 15, 10, 5, 0, -5, -10, 100);
-        rule = new OverIndicatorRule(indicator, Decimal.valueOf(5));
+        BarSeries series = new BaseBarSeries();
+        Indicator<Num> indicator = new FixedDecimalIndicator(series, 20, 15, 10, 5, 0, -5, -10, 100);
+        rule = new OverIndicatorRule(indicator, series.numOf(5));
     }
-    
+
     @Test
     public void isSatisfied() {
         assertTrue(rule.isSatisfied(0));
@@ -54,4 +57,3 @@ public class OverIndicatorRuleTest {
         assertTrue(rule.isSatisfied(7));
     }
 }
-        

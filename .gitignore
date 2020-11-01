@@ -9,6 +9,7 @@ nbactions.xml
 log/
 bin/
 target/
+out/
 
 *.class
 
@@ -16,3 +17,6 @@ target/
 *.jar
 *.war
 *.ear
+
+# temp files #
+ta4j-examples/indicators.csv

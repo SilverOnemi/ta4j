@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,42 +23,43 @@
  */
 package org.ta4j.core.indicators.candles;
 
-import org.ta4j.core.Decimal;
-import org.ta4j.core.Tick;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.Bar;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.CachedIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Lower shadow height indicator.
- * <p>
- * Provides the (absolute) difference between the min price and the lowest price of the candle body.
- * I.e.: min price - min(open price, close price)
- * @see http://stockcharts.com/school/doku.php?id=chart_school:chart_analysis:introduction_to_candlesticks#formation
+ *
+ * Provides the (absolute) difference between the min price and the lowest price
+ * of the candle body. I.e.: min price - min(open price, close price)
+ *
+ * @see <a href=
+ *      "http://stockcharts.com/school/doku.php?id=chart_school:chart_analysis:introduction_to_candlesticks#formation">
+ *      http://stockcharts.com/school/doku.php?id=chart_school:chart_analysis:introduction_to_candlesticks#formation</a>
  */
-public class LowerShadowIndicator extends CachedIndicator<Decimal> {
-
-    private final TimeSeries series;
+public class LowerShadowIndicator extends CachedIndicator<Num> {
 
     /**
      * Constructor.
-     * @param series a time series
+     *
+     * @param series a bar series
      */
-    public LowerShadowIndicator(TimeSeries series) {
+    public LowerShadowIndicator(BarSeries series) {
         super(series);
-        this.series = series;
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        Tick t = series.getTick(index);
-        final Decimal openPrice = t.getOpenPrice();
-        final Decimal closePrice = t.getClosePrice();
+    protected Num calculate(int index) {
+        Bar t = getBarSeries().getBar(index);
+        final Num openPrice = t.getOpenPrice();
+        final Num closePrice = t.getClosePrice();
         if (closePrice.isGreaterThan(openPrice)) {
             // Bullish
-            return openPrice.minus(t.getMinPrice());
+            return openPrice.minus(t.getLowPrice());
         } else {
             // Bearish
-            return closePrice.minus(t.getMinPrice());
+            return closePrice.minus(t.getLowPrice());
         }
     }
 }

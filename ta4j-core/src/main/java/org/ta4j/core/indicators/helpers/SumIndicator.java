@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,35 +23,36 @@
  */
 package org.ta4j.core.indicators.helpers;
 
-import org.ta4j.core.Decimal;
 import org.ta4j.core.Indicator;
 import org.ta4j.core.indicators.CachedIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Sum indicator.
- * <p>
+ *
  * I.e.: operand0 + operand1 + ... + operandN
  */
-public class SumIndicator extends CachedIndicator<Decimal> {
+public class SumIndicator extends CachedIndicator<Num> {
 
-    private Indicator<Decimal>[] operands;
-    
+    private final Indicator<Num>[] operands;
+
     /**
-     * Constructor.
-     * (operand0 plus operand1 plus ... plus operandN)
+     * Constructor. (operand0 plus operand1 plus ... plus operandN)
+     * 
      * @param operands the operand indicators for the sum
      */
-    public SumIndicator(Indicator<Decimal>... operands) {
+    @SafeVarargs
+    public SumIndicator(Indicator<Num>... operands) {
         // TODO: check if first series is equal to the other ones
         super(operands[0]);
         this.operands = operands;
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        Decimal sum = Decimal.ZERO;
-        for (int i = 0; i < operands.length; i++) {
-            sum = sum.plus(operands[i].getValue(index));
+    protected Num calculate(int index) {
+        Num sum = numOf(0);
+        for (Indicator<Num> operand : operands) {
+            sum = sum.plus(operand.getValue(index));
         }
         return sum;
     }

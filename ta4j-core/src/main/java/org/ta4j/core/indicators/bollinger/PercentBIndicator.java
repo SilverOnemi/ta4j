@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,46 +23,48 @@
  */
 package org.ta4j.core.indicators.bollinger;
 
-import org.ta4j.core.Decimal;
 import org.ta4j.core.Indicator;
 import org.ta4j.core.indicators.CachedIndicator;
 import org.ta4j.core.indicators.SMAIndicator;
 import org.ta4j.core.indicators.statistics.StandardDeviationIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * %B indicator.
- * @see http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:bollinger_band_perce
+ * 
+ * @see <a
+ *      href="http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:bollinger_band_perce>
+ *      http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:bollinger_band_perce</a>
  */
-public class PercentBIndicator extends CachedIndicator<Decimal> {
-    
-    private final Indicator<Decimal> indicator;
+public class PercentBIndicator extends CachedIndicator<Num> {
+
+    private final Indicator<Num> indicator;
 
     private final BollingerBandsUpperIndicator bbu;
-    
-    private final BollingerBandsMiddleIndicator bbm;
-    
+
     private final BollingerBandsLowerIndicator bbl;
 
     /**
      * Constructor.
+     * 
      * @param indicator an indicator (usually close price)
-     * @param timeFrame the time frame
-     * @param k the K multiplier (usually 2.0)
+     * @param barCount  the time frame
+     * @param k         the K multiplier (usually 2.0)
      */
-    public PercentBIndicator(Indicator<Decimal> indicator, int timeFrame, Decimal k) {
+    public PercentBIndicator(Indicator<Num> indicator, int barCount, double k) {
         super(indicator);
         this.indicator = indicator;
-        this.bbm = new BollingerBandsMiddleIndicator(new SMAIndicator(indicator, timeFrame));
-        StandardDeviationIndicator sd = new StandardDeviationIndicator(indicator, timeFrame);
-        this.bbu = new BollingerBandsUpperIndicator(bbm, sd, k);
-        this.bbl = new BollingerBandsLowerIndicator(bbm, sd, k);;
+        BollingerBandsMiddleIndicator bbm = new BollingerBandsMiddleIndicator(new SMAIndicator(indicator, barCount));
+        StandardDeviationIndicator sd = new StandardDeviationIndicator(indicator, barCount);
+        this.bbu = new BollingerBandsUpperIndicator(bbm, sd, numOf(k));
+        this.bbl = new BollingerBandsLowerIndicator(bbm, sd, numOf(k));
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        Decimal value = indicator.getValue(index);
-        Decimal upValue = bbu.getValue(index);
-        Decimal lowValue = bbl.getValue(index);
+    protected Num calculate(int index) {
+        Num value = indicator.getValue(index);
+        Num upValue = bbu.getValue(index);
+        Num lowValue = bbl.getValue(index);
         return value.minus(lowValue).dividedBy(upValue.minus(lowValue));
     }
 }

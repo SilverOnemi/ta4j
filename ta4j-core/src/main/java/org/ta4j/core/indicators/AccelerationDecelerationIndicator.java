@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,32 +23,30 @@
  */
 package org.ta4j.core.indicators;
 
-import org.ta4j.core.Decimal;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.helpers.MedianPriceIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Acceleration-deceleration indicator.
- * <p>
  */
-public class AccelerationDecelerationIndicator extends CachedIndicator<Decimal> {
-    
-    private AwesomeOscillatorIndicator awesome;
-    
-    private SMAIndicator sma5;
+public class AccelerationDecelerationIndicator extends CachedIndicator<Num> {
 
-    public AccelerationDecelerationIndicator(TimeSeries series, int timeFrameSma1, int timeFrameSma2) {
+    private final AwesomeOscillatorIndicator awesome;
+    private final SMAIndicator sma;
+
+    public AccelerationDecelerationIndicator(BarSeries series, int barCountSma1, int barCountSma2) {
         super(series);
-        this.awesome = new AwesomeOscillatorIndicator(new MedianPriceIndicator(series), timeFrameSma1, timeFrameSma2);
-        this.sma5 = new SMAIndicator(awesome, timeFrameSma1);
+        this.awesome = new AwesomeOscillatorIndicator(new MedianPriceIndicator(series), barCountSma1, barCountSma2);
+        this.sma = new SMAIndicator(awesome, barCountSma1);
     }
-    
-    public AccelerationDecelerationIndicator(TimeSeries series) {
+
+    public AccelerationDecelerationIndicator(BarSeries series) {
         this(series, 5, 34);
     }
-    
+
     @Override
-    protected Decimal calculate(int index) {
-        return awesome.getValue(index).minus(sma5.getValue(index));
+    protected Num calculate(int index) {
+        return awesome.getValue(index).minus(sma.getValue(index));
     }
 }

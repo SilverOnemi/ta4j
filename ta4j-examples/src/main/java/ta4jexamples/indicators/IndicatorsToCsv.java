@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,9 +23,14 @@
  */
 package ta4jexamples.indicators;
 
-import org.ta4j.core.TimeSeries;
-import org.ta4j.core.indicators.*;
-import org.ta4j.core.indicators.helpers.AverageTrueRangeIndicator;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.indicators.ATRIndicator;
+import org.ta4j.core.indicators.EMAIndicator;
+import org.ta4j.core.indicators.PPOIndicator;
+import org.ta4j.core.indicators.ROCIndicator;
+import org.ta4j.core.indicators.RSIIndicator;
+import org.ta4j.core.indicators.SMAIndicator;
+import org.ta4j.core.indicators.WilliamsRIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.indicators.helpers.PriceVariationIndicator;
 import org.ta4j.core.indicators.helpers.TypicalPriceIndicator;
@@ -32,6 +38,7 @@ import org.ta4j.core.indicators.statistics.StandardDeviationIndicator;
 import ta4jexamples.loaders.CsvTradesLoader;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -44,12 +51,12 @@ public class IndicatorsToCsv {
 
     public static void main(String[] args) {
 
-        /**
-         * Getting time series
+        /*
+         * Getting bar series
          */
-        TimeSeries series = CsvTradesLoader.loadBitstampSeries();
+        BarSeries series = CsvTradesLoader.loadBitstampSeries();
 
-        /**
+        /*
          * Creating indicators
          */
         // Close price
@@ -73,42 +80,36 @@ public class IndicatorsToCsv {
         // Williams %R
         WilliamsRIndicator williamsR = new WilliamsRIndicator(series, 20);
         // Average true range
-        AverageTrueRangeIndicator atr = new AverageTrueRangeIndicator(series, 20);
+        ATRIndicator atr = new ATRIndicator(series, 20);
         // Standard deviation
         StandardDeviationIndicator sd = new StandardDeviationIndicator(closePrice, 14);
 
-        /**
+        /*
          * Building header
          */
-        StringBuilder sb = new StringBuilder("timestamp,close,typical,variation,sma8,sma20,ema8,ema20,ppo,roc,rsi,williamsr,atr,sd\n");
+        StringBuilder sb = new StringBuilder(
+                "timestamp,close,typical,variation,sma8,sma20,ema8,ema20,ppo,roc,rsi,williamsr,atr,sd\n");
 
-        /**
+        /*
          * Adding indicators values
          */
-        final int nbTicks = series.getTickCount();
-        for (int i = 0; i < nbTicks; i++) {
-            sb.append(series.getTick(i).getEndTime()).append(',')
-            .append(closePrice.getValue(i)).append(',')
-            .append(typicalPrice.getValue(i)).append(',')
-            .append(priceVariation.getValue(i)).append(',')
-            .append(shortSma.getValue(i)).append(',')
-            .append(longSma.getValue(i)).append(',')
-            .append(shortEma.getValue(i)).append(',')
-            .append(longEma.getValue(i)).append(',')
-            .append(ppo.getValue(i)).append(',')
-            .append(roc.getValue(i)).append(',')
-            .append(rsi.getValue(i)).append(',')
-            .append(williamsR.getValue(i)).append(',')
-            .append(atr.getValue(i)).append(',')
-            .append(sd.getValue(i)).append('\n');
+        final int nbBars = series.getBarCount();
+        for (int i = 0; i < nbBars; i++) {
+            sb.append(series.getBar(i).getEndTime()).append(',').append(closePrice.getValue(i)).append(',')
+                    .append(typicalPrice.getValue(i)).append(',').append(priceVariation.getValue(i)).append(',')
+                    .append(shortSma.getValue(i)).append(',').append(longSma.getValue(i)).append(',')
+                    .append(shortEma.getValue(i)).append(',').append(longEma.getValue(i)).append(',')
+                    .append(ppo.getValue(i)).append(',').append(roc.getValue(i)).append(',').append(rsi.getValue(i))
+                    .append(',').append(williamsR.getValue(i)).append(',').append(atr.getValue(i)).append(',')
+                    .append(sd.getValue(i)).append('\n');
         }
 
-        /**
+        /*
          * Writing CSV file
          */
         BufferedWriter writer = null;
         try {
-            writer = new BufferedWriter(new FileWriter("indicators.csv"));
+            writer = new BufferedWriter(new FileWriter(new File("target", "indicators.csv")));
             writer.write(sb.toString());
         } catch (IOException ioe) {
             Logger.getLogger(IndicatorsToCsv.class.getName()).log(Level.SEVERE, "Unable to write CSV file", ioe);
@@ -118,6 +119,7 @@ public class IndicatorsToCsv {
                     writer.close();
                 }
             } catch (IOException ioe) {
+                ioe.printStackTrace();
             }
         }
 

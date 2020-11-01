@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,56 +23,59 @@
  */
 package org.ta4j.core.indicators;
 
-import org.ta4j.core.Decimal;
 import org.ta4j.core.Indicator;
-import org.ta4j.core.TimeSeries;
-import org.ta4j.core.indicators.helpers.*;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
+import org.ta4j.core.indicators.helpers.HighPriceIndicator;
+import org.ta4j.core.indicators.helpers.HighestValueIndicator;
+import org.ta4j.core.indicators.helpers.LowPriceIndicator;
+import org.ta4j.core.indicators.helpers.LowestValueIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * William's R indicator.
- * <p>
+ *
+ *
+ * @see <a href=
+ *      "https://www.investopedia.com/terms/w/williamsr.asp">https://www.investopedia.com/terms/w/williamsr.asp</a>
  */
-public class WilliamsRIndicator extends CachedIndicator<Decimal> {
+public class WilliamsRIndicator extends CachedIndicator<Num> {
 
-    private final Indicator<Decimal> indicator;
+    private final Indicator<Num> closePriceIndicator;
+    private final int barCount;
+    private final HighPriceIndicator highPriceIndicator;
+    private final LowPriceIndicator lowPriceIndicator;
+    private final Num multiplier;
 
-    private final int timeFrame;
-
-    private MaxPriceIndicator maxPriceIndicator;
-
-    private MinPriceIndicator minPriceIndicator;
-    
-    private final static Decimal multiplier = Decimal.valueOf("-100");
-
-    public WilliamsRIndicator(TimeSeries timeSeries, int timeFrame) {
-        this(new ClosePriceIndicator(timeSeries), timeFrame, new MaxPriceIndicator(timeSeries), new MinPriceIndicator(
-                timeSeries));
+    public WilliamsRIndicator(BarSeries barSeries, int barCount) {
+        this(new ClosePriceIndicator(barSeries), barCount, new HighPriceIndicator(barSeries),
+                new LowPriceIndicator(barSeries));
     }
 
-    public WilliamsRIndicator(Indicator<Decimal> indicator, int timeFrame,
-            MaxPriceIndicator maxPriceIndicator, MinPriceIndicator minPriceIndicator) {
-        super(indicator);
-        this.indicator = indicator;
-        this.timeFrame = timeFrame;
-        this.maxPriceIndicator = maxPriceIndicator;
-        this.minPriceIndicator = minPriceIndicator;
+    public WilliamsRIndicator(ClosePriceIndicator closePriceIndicator, int barCount,
+            HighPriceIndicator highPriceIndicator, LowPriceIndicator lowPriceIndicator) {
+        super(closePriceIndicator);
+        this.closePriceIndicator = closePriceIndicator;
+        this.barCount = barCount;
+        this.highPriceIndicator = highPriceIndicator;
+        this.lowPriceIndicator = lowPriceIndicator;
+        this.multiplier = numOf(-100);
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        HighestValueIndicator highestHigh = new HighestValueIndicator(maxPriceIndicator, timeFrame);
-        LowestValueIndicator lowestMin = new LowestValueIndicator(minPriceIndicator, timeFrame);
+    protected Num calculate(int index) {
+        HighestValueIndicator highestHigh = new HighestValueIndicator(highPriceIndicator, barCount);
+        LowestValueIndicator lowestMin = new LowestValueIndicator(lowPriceIndicator, barCount);
 
-        Decimal highestHighPrice = highestHigh.getValue(index);
-        Decimal lowestLowPrice = lowestMin.getValue(index);
+        Num highestHighPrice = highestHigh.getValue(index);
+        Num lowestLowPrice = lowestMin.getValue(index);
 
-        return ((highestHighPrice.minus(indicator.getValue(index)))
-                .dividedBy(highestHighPrice.minus(lowestLowPrice)))
-                .multipliedBy(multiplier);
+        return ((highestHighPrice.minus(closePriceIndicator.getValue(index)))
+                .dividedBy(highestHighPrice.minus(lowestLowPrice))).multipliedBy(multiplier);
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " timeFrame: " + timeFrame;
+        return getClass().getSimpleName() + " barCount: " + barCount;
     }
 }

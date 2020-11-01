@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,41 +24,45 @@
 package org.ta4j.core.analysis.criteria;
 
 import org.ta4j.core.AnalysisCriterion;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.Trade;
 import org.ta4j.core.TradingRecord;
+import org.ta4j.core.num.Num;
 
 /**
  * Average profit criterion.
- * <p>
- * The {@link TotalProfitCriterion total profit} over the {@link NumberOfTicksCriterion number of ticks}.
+ *
+ * The {@link TotalProfitCriterion total profit} over the
+ * {@link NumberOfBarsCriterion number of bars}.
  */
 public class AverageProfitCriterion extends AbstractAnalysisCriterion {
 
     private AnalysisCriterion totalProfit = new TotalProfitCriterion();
 
-    private AnalysisCriterion numberOfTicks = new NumberOfTicksCriterion();
+    private AnalysisCriterion numberOfBars = new NumberOfBarsCriterion();
 
     @Override
-    public double calculate(TimeSeries series, TradingRecord tradingRecord) {
-        double ticks = numberOfTicks.calculate(series, tradingRecord);
-        if (ticks == 0) {
-            return 1;
+    public Num calculate(BarSeries series, TradingRecord tradingRecord) {
+        Num bars = numberOfBars.calculate(series, tradingRecord);
+        if (bars.isEqual(series.numOf(0))) {
+            return series.numOf(1);
         }
-        return Math.pow(totalProfit.calculate(series, tradingRecord), 1d / ticks);
+
+        return totalProfit.calculate(series, tradingRecord).pow(series.numOf(1).dividedBy(bars));
     }
 
     @Override
-    public double calculate(TimeSeries series, Trade trade) {
-        double ticks = numberOfTicks.calculate(series, trade);
-        if (ticks == 0) {
-            return 1;
+    public Num calculate(BarSeries series, Trade trade) {
+        Num bars = numberOfBars.calculate(series, trade);
+        if (bars.isEqual(series.numOf(0))) {
+            return series.numOf(1);
         }
-        return Math.pow(totalProfit.calculate(series, trade), 1d / ticks);
+
+        return totalProfit.calculate(series, trade).pow(series.numOf(1).dividedBy(bars));
     }
 
     @Override
-    public boolean betterThan(double criterionValue1, double criterionValue2) {
-        return criterionValue1 > criterionValue2;
+    public boolean betterThan(Num criterionValue1, Num criterionValue2) {
+        return criterionValue1.isGreaterThan(criterionValue2);
     }
 }

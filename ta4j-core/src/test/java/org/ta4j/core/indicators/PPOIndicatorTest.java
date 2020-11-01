@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,40 +25,41 @@ package org.ta4j.core.indicators;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.Indicator;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
-import org.ta4j.core.mocks.MockTimeSeries;
+import org.ta4j.core.mocks.MockBarSeries;
+import org.ta4j.core.num.Num;
 
-import static org.ta4j.core.TATestsUtils.assertDecimalEquals;
+import java.util.function.Function;
 
-public class PPOIndicatorTest {
+import static org.ta4j.core.TestUtils.assertNumEquals;
 
-    private TimeSeries series;
+public class PPOIndicatorTest extends AbstractIndicatorTest<Indicator<Num>, Num> {
 
     private ClosePriceIndicator closePriceIndicator;
 
+    public PPOIndicatorTest(Function<Number, Num> numFunction) {
+        super(numFunction);
+    }
+
     @Before
     public void setUp() {
-        series = new MockTimeSeries(
-                22.27, 22.19, 22.08, 22.17, 22.18, 22.13,
-                22.23, 22.43, 22.24, 22.29, 22.15, 22.39,
-                22.38, 22.61, 23.36, 24.05, 23.75, 23.83,
-                23.95, 23.63, 23.82, 23.87, 23.65, 23.19,
-                23.10, 23.33, 22.68, 23.10, 22.40, 22.17
-                );
+        BarSeries series = new MockBarSeries(numFunction, 22.27, 22.19, 22.08, 22.17, 22.18, 22.13, 22.23, 22.43, 22.24,
+                22.29, 22.15, 22.39, 22.38, 22.61, 23.36, 24.05, 23.75, 23.83, 23.95, 23.63, 23.82, 23.87, 23.65, 23.19,
+                23.10, 23.33, 22.68, 23.10, 21.40, 20.17);
         closePriceIndicator = new ClosePriceIndicator(series);
     }
 
     @Test
     public void getValueWithEma10AndEma20() {
-
         PPOIndicator ppo = new PPOIndicator(closePriceIndicator, 10, 20);
 
-        assertDecimalEquals(ppo.getValue(21), 2.4043);
-        assertDecimalEquals(ppo.getValue(22), 2.2224);
-        assertDecimalEquals(ppo.getValue(23), 1.88);
-        
-        assertDecimalEquals(ppo.getValue(28), 0.4408);
-        assertDecimalEquals(ppo.getValue(29), 0.0559);
+        assertNumEquals(1.6778, ppo.getValue(21));
+        assertNumEquals(1.5669, ppo.getValue(22));
+        assertNumEquals(1.2884, ppo.getValue(23));
+
+        assertNumEquals(-0.2925, ppo.getValue(28));
+        assertNumEquals(-1.3088, ppo.getValue(29));
     }
 }

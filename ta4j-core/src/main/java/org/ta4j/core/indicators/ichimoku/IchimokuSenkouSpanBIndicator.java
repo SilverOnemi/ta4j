@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,30 +23,34 @@
  */
 package org.ta4j.core.indicators.ichimoku;
 
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.BarSeries;
 
 /**
  * Ichimoku clouds: Senkou Span B (Leading Span B) indicator
- * <p>
- * @see http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:ichimoku_cloud
+ *
+ * @see <a href=
+ *      "http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:ichimoku_cloud">
+ *      http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:ichimoku_cloud</a>
  */
 public class IchimokuSenkouSpanBIndicator extends AbstractIchimokuLineIndicator {
 
     /**
      * Constructor.
+     * 
      * @param series the series
      */
-    public IchimokuSenkouSpanBIndicator(TimeSeries series) {
+    public IchimokuSenkouSpanBIndicator(BarSeries series) {
         super(series, 52);
     }
 
     /**
      * Constructor.
-     * @param series the series
-     * @param timeFrame the time frame (usually 52)
+     * 
+     * @param series   the series
+     * @param barCount the time frame (usually 52)
      */
-    public IchimokuSenkouSpanBIndicator(TimeSeries series, int timeFrame) {
-        super(series, timeFrame);
+    public IchimokuSenkouSpanBIndicator(BarSeries series, int barCount) {
+        super(series, barCount);
     }
 
 }

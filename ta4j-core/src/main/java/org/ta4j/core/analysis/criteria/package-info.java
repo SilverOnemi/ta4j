@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,8 +23,11 @@
  */
 /**
  * Analysis criteria.
- * <p>
- * Analysis criteria can be used to compare two trading {@link Strategy strategies}.<br>
- * The most common criterion is the {@link TotalProfitCriterion total profit criterion}. It measures how much is profitable a strategy.
+ *
+ * Analysis criteria can be used to compare two trading
+ * {@link org.ta4j.core.Strategy strategy}.<br>
+ * The most common criterion is the
+ * {@link org.ta4j.core.analysis.criteria.TotalProfitCriterion total profit
+ * criterion}. It measures how much is profitable a strategy.
  */
 package org.ta4j.core.analysis.criteria;

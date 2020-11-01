@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,6 +25,7 @@ package org.ta4j.core.trading.rules;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.Indicator;
 import org.ta4j.core.indicators.helpers.FixedIndicator;
 
@@ -32,15 +34,14 @@ import static org.junit.Assert.assertTrue;
 
 public class BooleanIndicatorRuleTest {
 
-    private Indicator<Boolean> indicator;
     private BooleanIndicatorRule rule;
-    
+
     @Before
     public void setUp() {
-        indicator = new FixedIndicator<Boolean>(true, true, false, false, true);
+        Indicator<Boolean> indicator = new FixedIndicator<Boolean>(new BaseBarSeries(), true, true, false, false, true);
         rule = new BooleanIndicatorRule(indicator);
     }
-    
+
     @Test
     public void isSatisfied() {
         assertTrue(rule.isSatisfied(0));
@@ -50,4 +51,3 @@ public class BooleanIndicatorRuleTest {
         assertTrue(rule.isSatisfied(4));
     }
 }
-        

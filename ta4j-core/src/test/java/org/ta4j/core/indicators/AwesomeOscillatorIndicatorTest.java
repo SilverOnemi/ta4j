@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,65 +25,77 @@ package org.ta4j.core.indicators;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ta4j.core.Tick;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.Bar;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.Indicator;
 import org.ta4j.core.indicators.helpers.MedianPriceIndicator;
-import org.ta4j.core.mocks.MockTick;
-import org.ta4j.core.mocks.MockTimeSeries;
+import org.ta4j.core.mocks.MockBar;
+import org.ta4j.core.mocks.MockBarSeries;
+import org.ta4j.core.num.Num;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
-import static org.ta4j.core.TATestsUtils.assertDecimalEquals;
+import static org.ta4j.core.TestUtils.assertNumEquals;
 
-public class AwesomeOscillatorIndicatorTest {
-    private TimeSeries series;
+public class AwesomeOscillatorIndicatorTest extends AbstractIndicatorTest<Indicator<Num>, Num> {
+    private BarSeries series;
+
+    /**
+     * Constructor.
+     *
+     * @param function
+     */
+    public AwesomeOscillatorIndicatorTest(Function<Number, Num> function) {
+        super(function);
+    }
 
     @Before
     public void setUp() {
 
-        List<Tick> ticks = new ArrayList<Tick>();
+        List<Bar> bars = new ArrayList<Bar>();
 
-        ticks.add(new MockTick(0, 0, 16, 8));
-        ticks.add(new MockTick(0, 0, 12, 6));
-        ticks.add(new MockTick(0, 0, 18, 14));
-        ticks.add(new MockTick(0, 0, 10, 6));
-        ticks.add(new MockTick(0, 0, 8, 4));
+        bars.add(new MockBar(0, 0, 16, 8, numFunction));
+        bars.add(new MockBar(0, 0, 12, 6, numFunction));
+        bars.add(new MockBar(0, 0, 18, 14, numFunction));
+        bars.add(new MockBar(0, 0, 10, 6, numFunction));
+        bars.add(new MockBar(0, 0, 8, 4, numFunction));
 
-        this.series = new MockTimeSeries(ticks);
+        this.series = new MockBarSeries(bars);
     }
 
     @Test
     public void calculateWithSma2AndSma3() {
         AwesomeOscillatorIndicator awesome = new AwesomeOscillatorIndicator(new MedianPriceIndicator(series), 2, 3);
 
-        assertDecimalEquals(awesome.getValue(0), 0);
-        assertDecimalEquals(awesome.getValue(1), 0);
-        assertDecimalEquals(awesome.getValue(2), 1d/6);
-        assertDecimalEquals(awesome.getValue(3), 1);
-        assertDecimalEquals(awesome.getValue(4), -3);
+        assertNumEquals(0, awesome.getValue(0));
+        assertNumEquals(0, awesome.getValue(1));
+        assertNumEquals(1d / 6, awesome.getValue(2));
+        assertNumEquals(1, awesome.getValue(3));
+        assertNumEquals(-3, awesome.getValue(4));
     }
 
     @Test
     public void withSma1AndSma2() {
         AwesomeOscillatorIndicator awesome = new AwesomeOscillatorIndicator(new MedianPriceIndicator(series), 1, 2);
 
-        assertDecimalEquals(awesome.getValue(0), 0);
-        assertDecimalEquals(awesome.getValue(1), "-1.5");
-        assertDecimalEquals(awesome.getValue(2), "3.5");
-        assertDecimalEquals(awesome.getValue(3), -4);
-        assertDecimalEquals(awesome.getValue(4), -1);
+        assertNumEquals(0, awesome.getValue(0));
+        assertNumEquals("-1.5", awesome.getValue(1));
+        assertNumEquals("3.5", awesome.getValue(2));
+        assertNumEquals(-4, awesome.getValue(3));
+        assertNumEquals(-1, awesome.getValue(4));
     }
 
     @Test
     public void withSmaDefault() {
         AwesomeOscillatorIndicator awesome = new AwesomeOscillatorIndicator(new MedianPriceIndicator(series));
 
-        assertDecimalEquals(awesome.getValue(0), 0);
-        assertDecimalEquals(awesome.getValue(1), 0);
-        assertDecimalEquals(awesome.getValue(2), 0);
-        assertDecimalEquals(awesome.getValue(3), 0);
-        assertDecimalEquals(awesome.getValue(4), 0);
+        assertNumEquals(0, awesome.getValue(0));
+        assertNumEquals(0, awesome.getValue(1));
+        assertNumEquals(0, awesome.getValue(2));
+        assertNumEquals(0, awesome.getValue(3));
+        assertNumEquals(0, awesome.getValue(4));
     }
 
 }

@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,49 +23,48 @@
  */
 package org.ta4j.core.indicators;
 
-import org.ta4j.core.Decimal;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.Indicator;
-import org.ta4j.core.TimeSeries;
 import org.ta4j.core.indicators.helpers.DifferenceIndicator;
-import org.ta4j.core.indicators.helpers.MaxPriceIndicator;
-import org.ta4j.core.indicators.helpers.MinPriceIndicator;
+import org.ta4j.core.indicators.helpers.HighPriceIndicator;
+import org.ta4j.core.indicators.helpers.LowPriceIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Mass index indicator.
- * <p>
- * @see http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:mass_index
+ *
+ * @see <a href=
+ *      "http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:mass_index">
+ *      http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:mass_index</a>
  */
-public class MassIndexIndicator extends CachedIndicator<Decimal> {
+public class MassIndexIndicator extends CachedIndicator<Num> {
 
-    private EMAIndicator singleEma;
-    
-    private EMAIndicator doubleEma;
-    
-    private int timeFrame;
+    private final EMAIndicator singleEma;
+    private final EMAIndicator doubleEma;
+    private final int barCount;
 
     /**
      * Constructor.
-     * @param series the time series
-     * @param emaTimeFrame the time frame for EMAs (usually 9)
-     * @param timeFrame the time frame
+     *
+     * @param series      the bar series
+     * @param emaBarCount the time frame for EMAs (usually 9)
+     * @param barCount    the time frame
      */
-    public MassIndexIndicator(TimeSeries series, int emaTimeFrame, int timeFrame) {
+    public MassIndexIndicator(BarSeries series, int emaBarCount, int barCount) {
         super(series);
-        Indicator<Decimal> highLowDifferential = new DifferenceIndicator(
-                new MaxPriceIndicator(series),
-                new MinPriceIndicator(series)
-        );
-        singleEma = new EMAIndicator(highLowDifferential, emaTimeFrame);
-        doubleEma = new EMAIndicator(singleEma, emaTimeFrame); // Not the same formula as DoubleEMAIndicator
-        this.timeFrame = timeFrame;
+        Indicator<Num> highLowDifferential = new DifferenceIndicator(new HighPriceIndicator(series),
+                new LowPriceIndicator(series));
+        singleEma = new EMAIndicator(highLowDifferential, emaBarCount);
+        doubleEma = new EMAIndicator(singleEma, emaBarCount); // Not the same formula as DoubleEMAIndicator
+        this.barCount = barCount;
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        final int startIndex = Math.max(0, index - timeFrame + 1);
-        Decimal massIndex = Decimal.ZERO;
+    protected Num calculate(int index) {
+        final int startIndex = Math.max(0, index - barCount + 1);
+        Num massIndex = numOf(0);
         for (int i = startIndex; i <= index; i++) {
-            Decimal emaRatio = singleEma.getValue(i).dividedBy(doubleEma.getValue(i));
+            Num emaRatio = singleEma.getValue(i).dividedBy(doubleEma.getValue(i));
             massIndex = massIndex.plus(emaRatio);
         }
         return massIndex;

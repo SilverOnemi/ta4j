@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -31,17 +32,17 @@ import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
-import org.ta4j.core.Decimal;
+import org.ta4j.core.Bar;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.Indicator;
-import org.ta4j.core.Tick;
-import org.ta4j.core.TimeSeries;
 import org.ta4j.core.indicators.EMAIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.indicators.statistics.StandardDeviationIndicator;
-import ta4jexamples.loaders.CsvTicksLoader;
+import org.ta4j.core.num.Num;
+import ta4jexamples.loaders.CsvBarsLoader;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -52,23 +53,26 @@ import java.util.Date;
 public class IndicatorsToChart {
 
     /**
-     * Builds a JFreeChart time series from a Ta4j time series and an indicator.
-     * @param tickSeries the ta4j time series
+     * Builds a JFreeChart time series from a Ta4j bar series and an indicator.
+     *
+     * @param barSeries the ta4j bar series
      * @param indicator the indicator
-     * @param name the name of the chart time series
+     * @param name      the name of the chart time series
      * @return the JFreeChart time series
      */
-    private static org.jfree.data.time.TimeSeries buildChartTimeSeries(TimeSeries tickSeries, Indicator<Decimal> indicator, String name) {
+    private static org.jfree.data.time.TimeSeries buildChartBarSeries(BarSeries barSeries, Indicator<Num> indicator,
+            String name) {
         org.jfree.data.time.TimeSeries chartTimeSeries = new org.jfree.data.time.TimeSeries(name);
-        for (int i = 0; i < tickSeries.getTickCount(); i++) {
-            Tick tick = tickSeries.getTick(i);
-            chartTimeSeries.add(new Day(Date.from(tick.getEndTime().toInstant())), indicator.getValue(i).toDouble());
+        for (int i = 0; i < barSeries.getBarCount(); i++) {
+            Bar bar = barSeries.getBar(i);
+            chartTimeSeries.add(new Day(Date.from(bar.getEndTime().toInstant())), indicator.getValue(i).doubleValue());
         }
         return chartTimeSeries;
     }
 
     /**
      * Displays a chart in a frame.
+     *
      * @param chart the chart to be displayed
      */
     private static void displayChart(JFreeChart chart) {
@@ -87,12 +91,12 @@ public class IndicatorsToChart {
 
     public static void main(String[] args) {
 
-        /**
-         * Getting time series
+        /*
+         * Getting bar series
          */
-        TimeSeries series = CsvTicksLoader.loadAppleIncSeries();
+        BarSeries series = CsvBarsLoader.loadAppleIncSeries();
 
-        /**
+        /*
          * Creating indicators
          */
         // Close price
@@ -105,31 +109,30 @@ public class IndicatorsToChart {
         BollingerBandsLowerIndicator lowBBand = new BollingerBandsLowerIndicator(middleBBand, sd14);
         BollingerBandsUpperIndicator upBBand = new BollingerBandsUpperIndicator(middleBBand, sd14);
 
-        /**
+        /*
          * Building chart dataset
          */
         TimeSeriesCollection dataset = new TimeSeriesCollection();
-        dataset.addSeries(buildChartTimeSeries(series, closePrice, "Apple Inc. (AAPL) - NASDAQ GS"));
-        dataset.addSeries(buildChartTimeSeries(series, lowBBand, "Low Bollinger Band"));
-        dataset.addSeries(buildChartTimeSeries(series, upBBand, "High Bollinger Band"));
+        dataset.addSeries(buildChartBarSeries(series, closePrice, "Apple Inc. (AAPL) - NASDAQ GS"));
+        dataset.addSeries(buildChartBarSeries(series, lowBBand, "Low Bollinger Band"));
+        dataset.addSeries(buildChartBarSeries(series, upBBand, "High Bollinger Band"));
 
-        /**
+        /*
          * Creating the chart
          */
-        JFreeChart chart = ChartFactory.createTimeSeriesChart(
-                "Apple Inc. 2013 Close Prices", // title
+        JFreeChart chart = ChartFactory.createTimeSeriesChart("Apple Inc. 2013 Close Prices", // title
                 "Date", // x-axis label
                 "Price Per Unit", // y-axis label
                 dataset, // data
                 true, // create legend?
                 true, // generate tooltips?
                 false // generate URLs?
-                );
+        );
         XYPlot plot = (XYPlot) chart.getPlot();
         DateAxis axis = (DateAxis) plot.getDomainAxis();
         axis.setDateFormatOverride(new SimpleDateFormat("yyyy-MM-dd"));
 
-        /**
+        /*
          * Displaying the chart
          */
         displayChart(chart);

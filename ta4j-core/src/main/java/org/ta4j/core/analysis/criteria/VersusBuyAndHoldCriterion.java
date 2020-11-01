@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -23,11 +24,13 @@
 package org.ta4j.core.analysis.criteria;
 
 import org.ta4j.core.*;
+import org.ta4j.core.num.Num;
 
 /**
  * Versus "buy and hold" criterion.
- * <p>
- * Compares the value of a provided {@link AnalysisCriterion criterion} with the value of a {@link BuyAndHoldCriterion "buy and hold" criterion}.
+ *
+ * Compares the value of a provided {@link AnalysisCriterion criterion} with the
+ * value of a {@link BuyAndHoldCriterion "buy and hold" criterion}.
  */
 public class VersusBuyAndHoldCriterion extends AbstractAnalysisCriterion {
 
@@ -35,6 +38,7 @@ public class VersusBuyAndHoldCriterion extends AbstractAnalysisCriterion {
 
     /**
      * Constructor.
+     * 
      * @param criterion an analysis criterion to be compared
      */
     public VersusBuyAndHoldCriterion(AnalysisCriterion criterion) {
@@ -42,32 +46,25 @@ public class VersusBuyAndHoldCriterion extends AbstractAnalysisCriterion {
     }
 
     @Override
-    public double calculate(TimeSeries series, TradingRecord tradingRecord) {
+    public Num calculate(BarSeries series, TradingRecord tradingRecord) {
         TradingRecord fakeRecord = new BaseTradingRecord();
         fakeRecord.enter(series.getBeginIndex());
         fakeRecord.exit(series.getEndIndex());
 
-        return criterion.calculate(series, tradingRecord) / criterion.calculate(series, fakeRecord);
+        return criterion.calculate(series, tradingRecord).dividedBy(criterion.calculate(series, fakeRecord));
     }
 
     @Override
-    public double calculate(TimeSeries series, Trade trade) {
+    public Num calculate(BarSeries series, Trade trade) {
         TradingRecord fakeRecord = new BaseTradingRecord();
         fakeRecord.enter(series.getBeginIndex());
         fakeRecord.exit(series.getEndIndex());
 
-        return criterion.calculate(series, trade) / criterion.calculate(series, fakeRecord);
+        return criterion.calculate(series, trade).dividedBy(criterion.calculate(series, fakeRecord));
     }
 
     @Override
-    public boolean betterThan(double criterionValue1, double criterionValue2) {
-        return criterionValue1 > criterionValue2;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(super.toString());
-        sb.append(" (").append(criterion).append(')');
-        return sb.toString();
+    public boolean betterThan(Num criterionValue1, Num criterionValue2) {
+        return criterionValue1.isGreaterThan(criterionValue2);
     }
 }

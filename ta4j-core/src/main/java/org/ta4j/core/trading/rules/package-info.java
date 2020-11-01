@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,8 +23,10 @@
  */
 /**
  * Trading rules for trading strategies.
- * <p>
- * {@link Rule Rules} can be combined and set as entry/exit signals for a trading {@link Strategy strategy}.
- * A trading strategy is designed to achieve a profitable return by going long or short over a {@link TimeSeries time series}.
+ *
+ * {@link org.ta4j.core.Rule} can be combined and set as entry/exit signals for
+ * a trading {@link org.ta4j.core.Strategy}. A trading strategy is designed to
+ * achieve a profitable return by going long or short over a
+ * {@link org.ta4j.core.BarSeries}.
  */
 package org.ta4j.core.trading.rules;

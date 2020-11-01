@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -27,15 +28,16 @@ import org.ta4j.core.TradingRecord;
 
 /**
  * A boolean-indicator-based rule.
- * <p>
+ *
  * Satisfied when the value of the {@link Indicator indicator} is true.
  */
 public class BooleanIndicatorRule extends AbstractRule {
 
-    private Indicator<Boolean> indicator;
+    private final Indicator<Boolean> indicator;
 
     /**
      * Constructor.
+     *
      * @param indicator a boolean indicator
      */
     public BooleanIndicatorRule(Indicator<Boolean> indicator) {

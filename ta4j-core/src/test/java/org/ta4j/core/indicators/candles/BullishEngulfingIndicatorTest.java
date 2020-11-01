@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,33 +25,41 @@ package org.ta4j.core.indicators.candles;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ta4j.core.Tick;
-import org.ta4j.core.TimeSeries;
-import org.ta4j.core.mocks.MockTick;
-import org.ta4j.core.mocks.MockTimeSeries;
+import org.ta4j.core.Bar;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.Indicator;
+import org.ta4j.core.indicators.AbstractIndicatorTest;
+import org.ta4j.core.mocks.MockBar;
+import org.ta4j.core.mocks.MockBarSeries;
+import org.ta4j.core.num.Num;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class BullishEngulfingIndicatorTest {
+public class BullishEngulfingIndicatorTest extends AbstractIndicatorTest<Indicator<Num>, Num> {
 
-    private TimeSeries series;
+    private BarSeries series;
+
+    public BullishEngulfingIndicatorTest(Function<Number, Num> numFunction) {
+        super(numFunction);
+    }
 
     @Before
     public void setUp() {
-        List<Tick> ticks = new ArrayList<Tick>();
+        List<Bar> bars = new ArrayList<Bar>();
         // open, close, high, low
-        ticks.add(new MockTick(10, 18, 20, 10));
-        ticks.add(new MockTick(17, 16, 19, 15));
-        ticks.add(new MockTick(15, 18, 19, 14));
-        ticks.add(new MockTick(15, 11, 15, 8));
-        ticks.add(new MockTick(11, 12, 12, 10));
-        series = new MockTimeSeries(ticks);
+        bars.add(new MockBar(10, 18, 20, 10, numFunction));
+        bars.add(new MockBar(17, 16, 19, 15, numFunction));
+        bars.add(new MockBar(15, 18, 19, 14, numFunction));
+        bars.add(new MockBar(15, 11, 15, 8, numFunction));
+        bars.add(new MockBar(11, 12, 12, 10, numFunction));
+        series = new MockBarSeries(bars);
     }
-    
+
     @Test
     public void getValue() {
         BullishEngulfingIndicator bep = new BullishEngulfingIndicator(series);

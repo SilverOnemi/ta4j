@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -29,19 +30,21 @@ import org.ta4j.core.trading.rules.XorRule;
 
 /**
  * A rule for strategy building.
- * <p>
+ *
  * A trading rule may be composed of a combination of other rules.
- * 
- * A {@link Strategy trading strategy} is a pair of complementary (entry and exit) rules.
+ *
+ * A {@link Strategy trading strategy} is a pair of complementary (entry and
+ * exit) rules.
  */
 public interface Rule {
 
     /**
      * @param rule another trading rule
-     * @return a rule which is the AND combination of this rule with the provided one
+     * @return a rule which is the AND combination of this rule with the provided
+     *         one
      */
     default Rule and(Rule rule) {
-    	return new AndRule(this, rule);
+        return new AndRule(this, rule);
     }
 
     /**
@@ -49,36 +52,39 @@ public interface Rule {
      * @return a rule which is the OR combination of this rule with the provided one
      */
     default Rule or(Rule rule) {
-    	return new OrRule(this, rule);
+        return new OrRule(this, rule);
     }
 
     /**
      * @param rule another trading rule
-     * @return a rule which is the XOR combination of this rule with the provided one
+     * @return a rule which is the XOR combination of this rule with the provided
+     *         one
      */
     default Rule xor(Rule rule) {
-    	return new XorRule(this, rule);
+        return new XorRule(this, rule);
     }
 
     /**
      * @return a rule which is the logical negation of this rule
      */
     default Rule negation() {
-    	return new NotRule(this);
+        return new NotRule(this);
     }
-    
+
     /**
-     * @param index the tick index
-     * @return true if this rule is satisfied for the provided index, false otherwise
+     * @param index the bar index
+     * @return true if this rule is satisfied for the provided index, false
+     *         otherwise
      */
     default boolean isSatisfied(int index) {
-    	return isSatisfied(index, null);
+        return isSatisfied(index, null);
     }
-    
+
     /**
-     * @param index the tick index
+     * @param index         the bar index
      * @param tradingRecord the potentially needed trading history
-     * @return true if this rule is satisfied for the provided index, false otherwise
+     * @return true if this rule is satisfied for the provided index, false
+     *         otherwise
      */
     boolean isSatisfied(int index, TradingRecord tradingRecord);
 }

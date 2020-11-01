@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,29 +23,30 @@
  */
 package org.ta4j.core.indicators;
 
-import org.ta4j.core.Decimal;
 import org.ta4j.core.Indicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Stochastic oscillator D.
- * <p>
- * Receive {@link StochasticOscillatorKIndicator} and returns its {@link SMAIndicator SMAIndicator(3)}.
+ *
+ * Receive {@link StochasticOscillatorKIndicator} and returns its
+ * {@link SMAIndicator SMAIndicator(3)}.
  */
-public class StochasticOscillatorDIndicator extends CachedIndicator<Decimal> {
+public class StochasticOscillatorDIndicator extends CachedIndicator<Num> {
 
-    private Indicator<Decimal> indicator;
+    private Indicator<Num> indicator;
 
     public StochasticOscillatorDIndicator(StochasticOscillatorKIndicator k) {
         this(new SMAIndicator(k, 3));
     }
 
-    public StochasticOscillatorDIndicator(Indicator<Decimal> indicator) {
+    public StochasticOscillatorDIndicator(Indicator<Num> indicator) {
         super(indicator);
         this.indicator = indicator;
     }
 
     @Override
-    protected Decimal calculate(int index) {
+    protected Num calculate(int index) {
         return indicator.getValue(index);
     }
 

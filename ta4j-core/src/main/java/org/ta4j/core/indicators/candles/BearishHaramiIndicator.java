@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,27 +23,26 @@
  */
 package org.ta4j.core.indicators.candles;
 
-import org.ta4j.core.Decimal;
-import org.ta4j.core.Tick;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.Bar;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.CachedIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Bearish Harami pattern indicator.
- * <p>
- * @see http://www.investopedia.com/terms/b/bearishharami.asp
+ *
+ * @see <a href="http://www.investopedia.com/terms/b/bearishharami.asp">
+ *      http://www.investopedia.com/terms/b/bearishharami.asp</a>
  */
 public class BearishHaramiIndicator extends CachedIndicator<Boolean> {
 
-    private final TimeSeries series;
-    
     /**
      * Constructor.
-     * @param series a time series
+     *
+     * @param series a bar series
      */
-    public BearishHaramiIndicator(TimeSeries series) {
+    public BearishHaramiIndicator(BarSeries series) {
         super(series);
-        this.series = series;
     }
 
     @Override
@@ -51,13 +51,13 @@ public class BearishHaramiIndicator extends CachedIndicator<Boolean> {
             // Harami is a 2-candle pattern
             return false;
         }
-        Tick prevTick = series.getTick(index-1);
-        Tick currTick = series.getTick(index);
-        if (prevTick.isBullish() && currTick.isBearish()) {
-            final Decimal prevOpenPrice = prevTick.getOpenPrice();
-            final Decimal prevClosePrice = prevTick.getClosePrice();
-            final Decimal currOpenPrice = currTick.getOpenPrice();
-            final Decimal currClosePrice = currTick.getClosePrice();
+        Bar prevBar = getBarSeries().getBar(index - 1);
+        Bar currBar = getBarSeries().getBar(index);
+        if (prevBar.isBullish() && currBar.isBearish()) {
+            final Num prevOpenPrice = prevBar.getOpenPrice();
+            final Num prevClosePrice = prevBar.getClosePrice();
+            final Num currOpenPrice = currBar.getOpenPrice();
+            final Num currClosePrice = currBar.getClosePrice();
             return currOpenPrice.isGreaterThan(prevOpenPrice) && currOpenPrice.isLessThan(prevClosePrice)
                     && currClosePrice.isGreaterThan(prevOpenPrice) && currClosePrice.isLessThan(prevClosePrice);
         }

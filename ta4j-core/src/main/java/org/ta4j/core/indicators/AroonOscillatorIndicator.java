@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,35 +23,44 @@
  */
 package org.ta4j.core.indicators;
 
-
-import org.ta4j.core.Decimal;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.num.Num;
 
 /**
  * Aroon Oscillator.
- * <p>
- * @see !http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:aroon_oscillator
+ *
+ * @see <a href=
+ *      "http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:aroon_oscillator">
+ *      http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:aroon_oscillator</a>
  */
-public class AroonOscillatorIndicator extends CachedIndicator<Decimal>{
+public class AroonOscillatorIndicator extends CachedIndicator<Num> {
 
     private final AroonDownIndicator aroonDownIndicator;
     private final AroonUpIndicator aroonUpIndicator;
-    private final int timeFrame;
+    private final int barCount;
 
-    public AroonOscillatorIndicator(TimeSeries series, int timeFrame) {
+    public AroonOscillatorIndicator(BarSeries series, int barCount) {
         super(series);
-        this.timeFrame = timeFrame;
-        aroonDownIndicator = new AroonDownIndicator(series, timeFrame);
-        aroonUpIndicator = new AroonUpIndicator(series, timeFrame);
+        this.barCount = barCount;
+        this.aroonDownIndicator = new AroonDownIndicator(series, barCount);
+        this.aroonUpIndicator = new AroonUpIndicator(series, barCount);
     }
 
     @Override
-    protected Decimal calculate(int index) {
+    protected Num calculate(int index) {
         return aroonUpIndicator.getValue(index).minus(aroonDownIndicator.getValue(index));
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName()+" timeFrame: "+timeFrame;
+        return getClass().getSimpleName() + " barCount: " + barCount;
+    }
+
+    public AroonDownIndicator getAroonDownIndicator() {
+        return aroonDownIndicator;
+    }
+
+    public AroonUpIndicator getAroonUpIndicator() {
+        return aroonUpIndicator;
     }
 }

@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -26,22 +27,28 @@ import org.ta4j.core.TradingRecord;
 
 /**
  * A simple boolean rule.
- * <p>
+ *
  * Satisfied when it has been initialized with true.
  */
 public class BooleanRule extends AbstractRule {
 
-    /** An always-true rule */
+    /**
+     * An always-true rule
+     */
     public static final BooleanRule TRUE = new BooleanRule(true);
-    
-    /** An always-false rule */
+
+    /**
+     * An always-false rule
+     */
     public static final BooleanRule FALSE = new BooleanRule(false);
-    
-    private boolean satisfied;
+
+    private final boolean satisfied;
 
     /**
      * Constructor.
-     * @param satisfied true for the rule to be always satisfied, false to be never satisfied
+     *
+     * @param satisfied true for the rule to be always satisfied, false to be never
+     *                  satisfied
      */
     public BooleanRule(boolean satisfied) {
         this.satisfied = satisfied;

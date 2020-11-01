@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,19 +25,28 @@ package org.ta4j.core.indicators.bollinger;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.Indicator;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.indicators.AbstractIndicatorTest;
 import org.ta4j.core.indicators.SMAIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
-import org.ta4j.core.mocks.MockTimeSeries;
+import org.ta4j.core.mocks.MockBarSeries;
+import org.ta4j.core.num.Num;
+
+import java.util.function.Function;
 
 import static junit.framework.TestCase.assertEquals;
 
-public class BollingerBandsMiddleIndicatorTest {
-    private TimeSeries data;
+public class BollingerBandsMiddleIndicatorTest extends AbstractIndicatorTest<Indicator<Num>, Num> {
+    private BarSeries data;
+
+    public BollingerBandsMiddleIndicatorTest(Function<Number, Num> numFunction) {
+        super(numFunction);
+    }
 
     @Before
     public void setUp() {
-        data = new MockTimeSeries(1, 2, 3, 4, 3, 4, 5, 4, 3, 3, 4, 3, 2);
+        data = new MockBarSeries(numFunction, 1, 2, 3, 4, 3, 4, 5, 4, 3, 3, 4, 3, 2);
     }
 
     @Test
@@ -44,7 +54,7 @@ public class BollingerBandsMiddleIndicatorTest {
         SMAIndicator sma = new SMAIndicator(new ClosePriceIndicator(data), 3);
         BollingerBandsMiddleIndicator bbmSMA = new BollingerBandsMiddleIndicator(sma);
 
-        for (int i = 0; i < data.getTickCount(); i++) {
+        for (int i = 0; i < data.getBarCount(); i++) {
             assertEquals(sma.getValue(i), bbmSMA.getValue(i));
         }
     }

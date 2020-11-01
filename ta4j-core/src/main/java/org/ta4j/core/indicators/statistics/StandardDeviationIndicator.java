@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,31 +23,34 @@
  */
 package org.ta4j.core.indicators.statistics;
 
-import org.ta4j.core.Decimal;
 import org.ta4j.core.Indicator;
 import org.ta4j.core.indicators.CachedIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Standard deviation indicator.
- * <p>
- * @see http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:standard_deviation_volatility
+ *
+ * @see <a href=
+ *      "http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:standard_deviation_volatility">
+ *      http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:standard_deviation_volatility</a>
  */
-public class StandardDeviationIndicator extends CachedIndicator<Decimal> {
+public class StandardDeviationIndicator extends CachedIndicator<Num> {
 
-    private VarianceIndicator variance;
+    private final VarianceIndicator variance;
 
     /**
      * Constructor.
+     *
      * @param indicator the indicator
-     * @param timeFrame the time frame
+     * @param barCount  the time frame
      */
-    public StandardDeviationIndicator(Indicator<Decimal> indicator, int timeFrame) {
+    public StandardDeviationIndicator(Indicator<Num> indicator, int barCount) {
         super(indicator);
-        variance = new VarianceIndicator(indicator, timeFrame);
+        variance = new VarianceIndicator(indicator, barCount);
     }
 
     @Override
-    protected Decimal calculate(int index) {
+    protected Num calculate(int index) {
         return variance.getValue(index).sqrt();
     }
 }

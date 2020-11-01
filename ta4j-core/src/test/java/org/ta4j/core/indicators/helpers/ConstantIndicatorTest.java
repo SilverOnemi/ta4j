@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,24 +25,26 @@ package org.ta4j.core.indicators.helpers;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ta4j.core.Decimal;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.BaseBarSeries;
+import org.ta4j.core.num.Num;
 
-import static org.ta4j.core.TATestsUtils.assertDecimalEquals;
+import static org.ta4j.core.TestUtils.assertNumEquals;
 
 public class ConstantIndicatorTest {
-    private ConstantIndicator<Decimal> constantIndicator;
+    private ConstantIndicator<Num> constantIndicator;
 
     @Before
     public void setUp() {
-
-        constantIndicator = new ConstantIndicator<Decimal>(Decimal.valueOf("30.33"));
+        BarSeries series = new BaseBarSeries();
+        constantIndicator = new ConstantIndicator<Num>(series, series.numOf(30.33));
     }
 
     @Test
     public void constantIndicator() {
-        assertDecimalEquals(constantIndicator.getValue(0), "30.33");
-        assertDecimalEquals(constantIndicator.getValue(1), "30.33");
-        assertDecimalEquals(constantIndicator.getValue(10), "30.33");
-        assertDecimalEquals(constantIndicator.getValue(30), "30.33");
+        assertNumEquals("30.33", constantIndicator.getValue(0));
+        assertNumEquals("30.33", constantIndicator.getValue(1));
+        assertNumEquals("30.33", constantIndicator.getValue(10));
+        assertNumEquals("30.33", constantIndicator.getValue(30));
     }
 }

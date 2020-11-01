@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,41 +25,39 @@ package org.ta4j.core.indicators.helpers;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ta4j.core.Decimal;
+import org.ta4j.core.BaseBarSeries;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.num.PrecisionNum;
+import org.ta4j.core.num.Num;
 
-import static org.ta4j.core.TATestsUtils.assertDecimalEquals;
+import java.util.function.Function;
+
+import static org.ta4j.core.TestUtils.assertNumEquals;
 
 public class DifferenceIndicatorTest {
-    
-    private ConstantIndicator<Decimal> constantIndicator;
-    
-    private FixedIndicator<Decimal> mockIndicator;
 
     private DifferenceIndicator differenceIndicator;
-    
+
     @Before
     public void setUp() {
-        constantIndicator = new ConstantIndicator<Decimal>(Decimal.valueOf(6));
-        mockIndicator = new FixedIndicator<Decimal>(
-                Decimal.valueOf("-2.0"),
-                Decimal.valueOf("0.00"),
-                Decimal.valueOf("1.00"),
-                Decimal.valueOf("2.53"),
-                Decimal.valueOf("5.87"),
-                Decimal.valueOf("6.00"),
-                Decimal.valueOf("10.0")
-        );
+        Function<Number, Num> numFunction = PrecisionNum::valueOf;
+
+        BarSeries series = new BaseBarSeries();
+        FixedIndicator<Num> mockIndicator = new FixedIndicator<Num>(series, numFunction.apply(-2.0),
+                numFunction.apply(0.00), numFunction.apply(1.00), numFunction.apply(2.53), numFunction.apply(5.87),
+                numFunction.apply(6.00), numFunction.apply(10.0));
+        ConstantIndicator<Num> constantIndicator = new ConstantIndicator<Num>(series, numFunction.apply(6));
         differenceIndicator = new DifferenceIndicator(constantIndicator, mockIndicator);
     }
 
     @Test
     public void getValue() {
-        assertDecimalEquals(differenceIndicator.getValue(0), "8");
-        assertDecimalEquals(differenceIndicator.getValue(1), "6");
-        assertDecimalEquals(differenceIndicator.getValue(2), "5");
-        assertDecimalEquals(differenceIndicator.getValue(3), "3.47");
-        assertDecimalEquals(differenceIndicator.getValue(4), "0.13");
-        assertDecimalEquals(differenceIndicator.getValue(5), "0");
-        assertDecimalEquals(differenceIndicator.getValue(6), "-4");
+        assertNumEquals("8", differenceIndicator.getValue(0));
+        assertNumEquals("6", differenceIndicator.getValue(1));
+        assertNumEquals("5", differenceIndicator.getValue(2));
+        assertNumEquals("3.47", differenceIndicator.getValue(3));
+        assertNumEquals("0.13", differenceIndicator.getValue(4));
+        assertNumEquals("0", differenceIndicator.getValue(5));
+        assertNumEquals("-4", differenceIndicator.getValue(6));
     }
 }

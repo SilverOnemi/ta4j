@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -27,18 +28,18 @@ import org.ta4j.core.TradingRecord;
 
 /**
  * An AND combination of two {@link Rule rules}.
- * <p>
+ *
  * Satisfied when the two provided rules are satisfied as well.<br>
  * Warning: the second rule is not tested if the first rule is not satisfied.
  */
 public class AndRule extends AbstractRule {
 
-    private Rule rule1;
-    
-    private Rule rule2;
+    private final Rule rule1;
+    private final Rule rule2;
 
     /**
      * Constructor
+     *
      * @param rule1 a trading rule
      * @param rule2 another trading rule
      */
@@ -52,5 +53,13 @@ public class AndRule extends AbstractRule {
         final boolean satisfied = rule1.isSatisfied(index, tradingRecord) && rule2.isSatisfied(index, tradingRecord);
         traceIsSatisfied(index, satisfied);
         return satisfied;
+    }
+
+    public Rule getRule1() {
+        return rule1;
+    }
+
+    public Rule getRule2() {
+        return rule2;
     }
 }

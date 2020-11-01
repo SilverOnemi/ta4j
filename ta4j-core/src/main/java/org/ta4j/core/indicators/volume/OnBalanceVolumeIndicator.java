@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,36 +23,39 @@
  */
 package org.ta4j.core.indicators.volume;
 
-import org.ta4j.core.Decimal;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.RecursiveCachedIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * On-balance volume indicator.
- * <p>
+ *
+ * @see <a href="https://www.investopedia.com/terms/o/onbalancevolume.asp">
+ *      https://www.investopedia.com/terms/o/onbalancevolume.asp</a>
  */
-public class OnBalanceVolumeIndicator extends RecursiveCachedIndicator<Decimal> {
+public class OnBalanceVolumeIndicator extends RecursiveCachedIndicator<Num> {
 
-    private final TimeSeries series;
+    private static final long serialVersionUID = -5870953997596403170L;
 
-    public OnBalanceVolumeIndicator(TimeSeries series) {
+    public OnBalanceVolumeIndicator(BarSeries series) {
         super(series);
-        this.series = series;
     }
 
     @Override
-    protected Decimal calculate(int index) {
+    protected Num calculate(int index) {
         if (index == 0) {
-            return Decimal.ZERO;
+            return numOf(0);
         }
-        Decimal yesterdayClose = series.getTick(index - 1).getClosePrice();
-        Decimal todayClose = series.getTick(index).getClosePrice();
+        final Num prevClose = getBarSeries().getBar(index - 1).getClosePrice();
+        final Num currentClose = getBarSeries().getBar(index).getClosePrice();
 
-        if (yesterdayClose.isGreaterThan(todayClose)) {
-            return getValue(index - 1).minus(series.getTick(index).getVolume());
-        } else if (yesterdayClose.isLessThan(todayClose)) {
-            return getValue(index - 1).plus(series.getTick(index).getVolume());
+        final Num obvPrev = getValue(index - 1);
+        if (prevClose.isGreaterThan(currentClose)) {
+            return obvPrev.minus(getBarSeries().getBar(index).getVolume());
+        } else if (prevClose.isLessThan(currentClose)) {
+            return obvPrev.plus(getBarSeries().getBar(index).getVolume());
+        } else {
+            return obvPrev;
         }
-        return getValue(index - 1);
     }
 }

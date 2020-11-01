@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,16 +23,17 @@
  */
 package org.ta4j.core.trading.rules;
 
-import org.ta4j.core.Decimal;
 import org.ta4j.core.Indicator;
 import org.ta4j.core.TradingRecord;
 import org.ta4j.core.indicators.helpers.ConstantIndicator;
 import org.ta4j.core.indicators.helpers.CrossIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Crossed-up indicator rule.
- * <p>
- * Satisfied when the value of the first {@link Indicator indicator} crosses-up the value of the second one.
+ *
+ * Satisfied when the value of the first {@link Indicator indicator} crosses-up
+ * the value of the second one.
  */
 public class CrossedUpIndicatorRule extends AbstractRule {
 
@@ -40,19 +42,31 @@ public class CrossedUpIndicatorRule extends AbstractRule {
 
     /**
      * Constructor.
+     * 
      * @param indicator the indicator
      * @param threshold a threshold
      */
-    public CrossedUpIndicatorRule(Indicator<Decimal> indicator, Decimal threshold) {
-        this(indicator, new ConstantIndicator<Decimal>(threshold));
+    public CrossedUpIndicatorRule(Indicator<Num> indicator, Number threshold) {
+        this(indicator, indicator.numOf(threshold));
     }
 
     /**
      * Constructor.
-     * @param first the first indicator
+     * 
+     * @param indicator the indicator
+     * @param threshold a threshold
+     */
+    public CrossedUpIndicatorRule(Indicator<Num> indicator, Num threshold) {
+        this(indicator, new ConstantIndicator<Num>(indicator.getBarSeries(), threshold));
+    }
+
+    /**
+     * Constructor.
+     * 
+     * @param first  the first indicator
      * @param second the second indicator
      */
-    public CrossedUpIndicatorRule(Indicator<Decimal> first, Indicator<Decimal> second) {
+    public CrossedUpIndicatorRule(Indicator<Num> first, Indicator<Num> second) {
         this.cross = new CrossIndicator(second, first);
     }
 
@@ -61,5 +75,19 @@ public class CrossedUpIndicatorRule extends AbstractRule {
         final boolean satisfied = cross.getValue(index);
         traceIsSatisfied(index, satisfied);
         return satisfied;
+    }
+
+    /**
+     * @return the initial lower indicator
+     */
+    public Indicator<Num> getLow() {
+        return cross.getLow();
+    }
+
+    /**
+     * @return the initial upper indicator
+     */
+    public Indicator<Num> getUp() {
+        return cross.getUp();
     }
 }

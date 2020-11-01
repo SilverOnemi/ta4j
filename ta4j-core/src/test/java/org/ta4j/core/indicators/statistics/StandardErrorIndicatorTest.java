@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,42 +25,51 @@ package org.ta4j.core.indicators.statistics;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.Indicator;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.indicators.AbstractIndicatorTest;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
-import org.ta4j.core.mocks.MockTimeSeries;
+import org.ta4j.core.mocks.MockBarSeries;
+import org.ta4j.core.num.Num;
 
-import static org.ta4j.core.TATestsUtils.assertDecimalEquals;
+import java.util.function.Function;
 
-public class StandardErrorIndicatorTest {
-    private TimeSeries data;
+import static org.ta4j.core.TestUtils.assertNumEquals;
+
+public class StandardErrorIndicatorTest extends AbstractIndicatorTest<Indicator<Num>, Num> {
+    private BarSeries data;
+
+    public StandardErrorIndicatorTest(Function<Number, Num> numFunction) {
+        super(numFunction);
+    }
 
     @Before
     public void setUp() {
-        data = new MockTimeSeries(10, 20, 30, 40, 50, 40, 40, 50, 40, 30, 20, 10);
+        data = new MockBarSeries(numFunction, 10, 20, 30, 40, 50, 40, 40, 50, 40, 30, 20, 10);
     }
 
     @Test
-    public void usingTimeFrame5UsingClosePrice() {
+    public void usingBarCount5UsingClosePrice() {
         StandardErrorIndicator se = new StandardErrorIndicator(new ClosePriceIndicator(data), 5);
 
-        assertDecimalEquals(se.getValue(0), 0);
-        assertDecimalEquals(se.getValue(1), 3.5355);
-        assertDecimalEquals(se.getValue(2), 4.714);
-        assertDecimalEquals(se.getValue(3), 5.5902);
-        assertDecimalEquals(se.getValue(4), 6.3246);
-        assertDecimalEquals(se.getValue(5), 4.5607);
-        assertDecimalEquals(se.getValue(6), 2.8284);
-        assertDecimalEquals(se.getValue(7), 2.1909);
-        assertDecimalEquals(se.getValue(8), 2.1909);
-        assertDecimalEquals(se.getValue(9), 2.8284);
-        assertDecimalEquals(se.getValue(10), 4.5607);
-        assertDecimalEquals(se.getValue(11), 6.3246);
+        assertNumEquals(0, se.getValue(0));
+        assertNumEquals(3.5355, se.getValue(1));
+        assertNumEquals(4.714, se.getValue(2));
+        assertNumEquals(5.5902, se.getValue(3));
+        assertNumEquals(6.3246, se.getValue(4));
+        assertNumEquals(4.5607, se.getValue(5));
+        assertNumEquals(2.8284, se.getValue(6));
+        assertNumEquals(2.1909, se.getValue(7));
+        assertNumEquals(2.1909, se.getValue(8));
+        assertNumEquals(2.8284, se.getValue(9));
+        assertNumEquals(4.5607, se.getValue(10));
+        assertNumEquals(6.3246, se.getValue(11));
     }
 
     @Test
-    public void shouldBeZeroWhenTimeFrameIs1() {
+    public void shouldBeZeroWhenBarCountIs1() {
         StandardErrorIndicator se = new StandardErrorIndicator(new ClosePriceIndicator(data), 1);
-        assertDecimalEquals(se.getValue(1), 0);
-        assertDecimalEquals(se.getValue(3), 0);
+        assertNumEquals(0, se.getValue(1));
+        assertNumEquals(0, se.getValue(3));
     }
 }

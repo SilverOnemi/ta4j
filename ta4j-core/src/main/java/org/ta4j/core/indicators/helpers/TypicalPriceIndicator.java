@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,28 +23,24 @@
  */
 package org.ta4j.core.indicators.helpers;
 
-import org.ta4j.core.Decimal;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.CachedIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Typical price indicator.
- * <p>
  */
-public class TypicalPriceIndicator extends CachedIndicator<Decimal> {
+public class TypicalPriceIndicator extends CachedIndicator<Num> {
 
-    private TimeSeries series;
-
-    public TypicalPriceIndicator(TimeSeries series) {
+    public TypicalPriceIndicator(BarSeries series) {
         super(series);
-        this.series = series;
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        Decimal maxPrice = series.getTick(index).getMaxPrice();
-        Decimal minPrice = series.getTick(index).getMinPrice();
-        Decimal closePrice = series.getTick(index).getClosePrice();
-        return maxPrice.plus(minPrice).plus(closePrice).dividedBy(Decimal.THREE);
+    protected Num calculate(int index) {
+        Num maxPrice = getBarSeries().getBar(index).getHighPrice();
+        Num minPrice = getBarSeries().getBar(index).getLowPrice();
+        Num closePrice = getBarSeries().getBar(index).getClosePrice();
+        return maxPrice.plus(minPrice).plus(closePrice).dividedBy(numOf(3));
     }
 }

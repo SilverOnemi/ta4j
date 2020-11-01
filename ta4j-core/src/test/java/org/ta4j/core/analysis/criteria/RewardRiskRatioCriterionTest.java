@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -25,64 +26,67 @@ package org.ta4j.core.analysis.criteria;
 import org.junit.Before;
 import org.junit.Test;
 import org.ta4j.core.*;
-import org.ta4j.core.mocks.MockTimeSeries;
+import org.ta4j.core.mocks.MockBarSeries;
+import org.ta4j.core.num.Num;
+
+import java.util.function.Function;
 
 import static org.junit.Assert.*;
+import static org.ta4j.core.TestUtils.assertNumEquals;
 
-public class RewardRiskRatioCriterionTest {
+public class RewardRiskRatioCriterionTest extends AbstractCriterionTest {
 
-    private RewardRiskRatioCriterion rrc;
+    private AnalysisCriterion rrc;
+
+    public RewardRiskRatioCriterionTest(Function<Number, Num> numFunction) {
+        super((params) -> new RewardRiskRatioCriterion(), numFunction);
+    }
 
     @Before
     public void setUp() {
-        this.rrc = new RewardRiskRatioCriterion();
+        this.rrc = getCriterion();
     }
 
     @Test
     public void rewardRiskRatioCriterion() {
-        TradingRecord tradingRecord = new BaseTradingRecord(
-                Order.buyAt(0), Order.sellAt(1),
-                Order.buyAt(2), Order.sellAt(4),
-                Order.buyAt(5), Order.sellAt(7));
-
-        MockTimeSeries series = new MockTimeSeries(100, 105, 95, 100, 90, 95, 80, 120);
+        MockBarSeries series = new MockBarSeries(numFunction, 100, 105, 95, 100, 90, 95, 80, 120);
+        TradingRecord tradingRecord = new BaseTradingRecord(Order.buyAt(0, series), Order.sellAt(1, series),
+                Order.buyAt(2, series), Order.sellAt(4, series), Order.buyAt(5, series), Order.sellAt(7, series));
 
         double totalProfit = (105d / 100) * (90d / 95d) * (120d / 95);
         double peak = (105d / 100) * (100d / 95);
         double low = (105d / 100) * (90d / 95) * (80d / 95);
 
-        assertEquals(totalProfit / ((peak - low) / peak), rrc.calculate(series, tradingRecord), TATestsUtils.TA_OFFSET);
+        assertNumEquals(totalProfit / ((peak - low) / peak), rrc.calculate(series, tradingRecord));
     }
 
     @Test
     public void rewardRiskRatioCriterionOnlyWithGain() {
-        MockTimeSeries series = new MockTimeSeries(1, 2, 3, 6, 8, 20, 3);
-        TradingRecord tradingRecord = new BaseTradingRecord(
-                Order.buyAt(0), Order.sellAt(1),
-                Order.buyAt(2), Order.sellAt(5));
-        assertTrue(Double.isInfinite(rrc.calculate(series, tradingRecord)));
+        MockBarSeries series = new MockBarSeries(numFunction, 1, 2, 3, 6, 8, 20, 3);
+        TradingRecord tradingRecord = new BaseTradingRecord(Order.buyAt(0, series), Order.sellAt(1, series),
+                Order.buyAt(2, series), Order.sellAt(5, series));
+        assertTrue(rrc.calculate(series, tradingRecord).isNaN());
     }
 
     @Test
     public void rewardRiskRatioCriterionWithNoTrades() {
-        MockTimeSeries series = new MockTimeSeries(1, 2, 3, 6, 8, 20, 3);
-        assertTrue(Double.isInfinite(rrc.calculate(series, new BaseTradingRecord())));
+        MockBarSeries series = new MockBarSeries(numFunction, 1, 2, 3, 6, 8, 20, 3);
+        assertTrue(rrc.calculate(series, new BaseTradingRecord()).isNaN());
     }
-    
+
     @Test
     public void withOneTrade() {
-        Trade trade = new Trade(Order.buyAt(0), Order.sellAt(1));
+        MockBarSeries series = new MockBarSeries(numFunction, 100, 95, 95, 100, 90, 95, 80, 120);
+        Trade trade = new Trade(Order.buyAt(0, series), Order.sellAt(1, series));
 
-        MockTimeSeries series = new MockTimeSeries(100, 95, 95, 100, 90, 95, 80, 120);
-
-        RewardRiskRatioCriterion ratioCriterion = new RewardRiskRatioCriterion();
-        assertEquals((95d/100) / ((1d - 0.95d)), TATestsUtils.TA_OFFSET, ratioCriterion.calculate(series, trade));
+        AnalysisCriterion ratioCriterion = getCriterion();
+        assertNumEquals((95d / 100) / ((1d - 0.95d)), ratioCriterion.calculate(series, trade));
     }
 
     @Test
     public void betterThan() {
-        AnalysisCriterion criterion = new RewardRiskRatioCriterion();
-        assertTrue(criterion.betterThan(3.5, 2.2));
-        assertFalse(criterion.betterThan(1.5, 2.7));
+        AnalysisCriterion criterion = getCriterion();
+        assertTrue(criterion.betterThan(numOf(3.5), numOf(2.2)));
+        assertFalse(criterion.betterThan(numOf(1.5), numOf(2.7)));
     }
 }

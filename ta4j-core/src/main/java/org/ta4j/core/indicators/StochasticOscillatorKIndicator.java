@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,58 +23,57 @@
  */
 package org.ta4j.core.indicators;
 
-import org.ta4j.core.Decimal;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.Indicator;
-import org.ta4j.core.TimeSeries;
 import org.ta4j.core.indicators.helpers.*;
-
+import org.ta4j.core.indicators.helpers.LowPriceIndicator;
+import org.ta4j.core.num.Num;
 
 /**
  * Stochastic oscillator K.
- * <p>
- * Receives timeSeries and timeFrame and calculates the StochasticOscillatorKIndicator
- * over ClosePriceIndicator, or receives an indicator, MaxPriceIndicator and
- * MinPriceIndicator and returns StochasticOsiclatorK over this indicator.
- * 
+ *
+ * Receives barSeries and barCount and calculates the
+ * StochasticOscillatorKIndicator over ClosePriceIndicator, or receives an
+ * indicator, HighPriceIndicator and LowPriceIndicator and returns
+ * StochasticOsiclatorK over this indicator.
  */
-public class StochasticOscillatorKIndicator extends CachedIndicator<Decimal> {
-    private final Indicator<Decimal> indicator;
+public class StochasticOscillatorKIndicator extends CachedIndicator<Num> {
+    private final Indicator<Num> indicator;
 
-    private final int timeFrame;
+    private final int barCount;
 
-    private MaxPriceIndicator maxPriceIndicator;
+    private HighPriceIndicator highPriceIndicator;
 
-    private MinPriceIndicator minPriceIndicator;
+    private LowPriceIndicator lowPriceIndicator;
 
-    public StochasticOscillatorKIndicator(TimeSeries timeSeries, int timeFrame) {
-        this(new ClosePriceIndicator(timeSeries), timeFrame, new MaxPriceIndicator(timeSeries), new MinPriceIndicator(
-                timeSeries));
+    public StochasticOscillatorKIndicator(BarSeries barSeries, int barCount) {
+        this(new ClosePriceIndicator(barSeries), barCount, new HighPriceIndicator(barSeries),
+                new LowPriceIndicator(barSeries));
     }
 
-    public StochasticOscillatorKIndicator(Indicator<Decimal> indicator, int timeFrame,
-            MaxPriceIndicator maxPriceIndicator, MinPriceIndicator minPriceIndicator) {
+    public StochasticOscillatorKIndicator(Indicator<Num> indicator, int barCount, HighPriceIndicator highPriceIndicator,
+            LowPriceIndicator lowPriceIndicator) {
         super(indicator);
         this.indicator = indicator;
-        this.timeFrame = timeFrame;
-        this.maxPriceIndicator = maxPriceIndicator;
-        this.minPriceIndicator = minPriceIndicator;
+        this.barCount = barCount;
+        this.highPriceIndicator = highPriceIndicator;
+        this.lowPriceIndicator = lowPriceIndicator;
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        HighestValueIndicator highestHigh = new HighestValueIndicator(maxPriceIndicator, timeFrame);
-        LowestValueIndicator lowestMin = new LowestValueIndicator(minPriceIndicator, timeFrame);
+    protected Num calculate(int index) {
+        HighestValueIndicator highestHigh = new HighestValueIndicator(highPriceIndicator, barCount);
+        LowestValueIndicator lowestMin = new LowestValueIndicator(lowPriceIndicator, barCount);
 
-        Decimal highestHighPrice = highestHigh.getValue(index);
-        Decimal lowestLowPrice = lowestMin.getValue(index);
+        Num highestHighPrice = highestHigh.getValue(index);
+        Num lowestLowPrice = lowestMin.getValue(index);
 
-        return indicator.getValue(index).minus(lowestLowPrice)
-                .dividedBy(highestHighPrice.minus(lowestLowPrice))
-                .multipliedBy(Decimal.HUNDRED);
+        return indicator.getValue(index).minus(lowestLowPrice).dividedBy(highestHighPrice.minus(lowestLowPrice))
+                .multipliedBy(numOf(100));
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " timeFrame: " + timeFrame;
+        return getClass().getSimpleName() + " barCount: " + barCount;
     }
 }

@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,42 +25,45 @@ package org.ta4j.core.indicators;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ta4j.core.TimeSeries;
+import org.ta4j.core.Indicator;
+import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
-import org.ta4j.core.mocks.MockTimeSeries;
+import org.ta4j.core.mocks.MockBarSeries;
+import org.ta4j.core.num.Num;
 
-import static org.ta4j.core.TATestsUtils.assertDecimalEquals;
+import java.util.function.Function;
 
-public class TripleEMAIndicatorTest {
+import static org.ta4j.core.TestUtils.assertNumEquals;
 
-    private TimeSeries data;
+public class TripleEMAIndicatorTest extends AbstractIndicatorTest<Indicator<Num>, Num> {
 
     private ClosePriceIndicator closePrice;
 
+    public TripleEMAIndicatorTest(Function<Number, Num> numFunction) {
+        super(numFunction);
+    }
+
     @Before
     public void setUp() {
-        data = new MockTimeSeries(
-                0.73, 0.72, 0.86, 0.72, 0.62,
-                0.76, 0.84, 0.69, 0.65, 0.71,
-                0.53, 0.73, 0.77, 0.67, 0.68
-        );
+        BarSeries data = new MockBarSeries(numFunction, 0.73, 0.72, 0.86, 0.72, 0.62, 0.76, 0.84, 0.69, 0.65, 0.71,
+                0.53, 0.73, 0.77, 0.67, 0.68);
         closePrice = new ClosePriceIndicator(data);
     }
 
     @Test
-    public void tripleEMAUsingTimeFrame5UsingClosePrice() {
+    public void tripleEMAUsingBarCount5UsingClosePrice() {
         TripleEMAIndicator tripleEma = new TripleEMAIndicator(closePrice, 5);
 
-        assertDecimalEquals(tripleEma.getValue(0), 0.73);
-        assertDecimalEquals(tripleEma.getValue(1), 0.7213);
-        assertDecimalEquals(tripleEma.getValue(2), 0.818);
+        assertNumEquals(0.73, tripleEma.getValue(0));
+        assertNumEquals(0.7229, tripleEma.getValue(1));
+        assertNumEquals(0.8185, tripleEma.getValue(2));
 
-        assertDecimalEquals(tripleEma.getValue(6), 0.8034);
-        assertDecimalEquals(tripleEma.getValue(7), 0.7329);
-        assertDecimalEquals(tripleEma.getValue(8), 0.6723);
+        assertNumEquals(0.8027, tripleEma.getValue(6));
+        assertNumEquals(0.7328, tripleEma.getValue(7));
+        assertNumEquals(0.6725, tripleEma.getValue(8));
 
-        assertDecimalEquals(tripleEma.getValue(12), 0.7385);
-        assertDecimalEquals(tripleEma.getValue(13), 0.6993);
-        assertDecimalEquals(tripleEma.getValue(14), 0.6876);
+        assertNumEquals(0.7386, tripleEma.getValue(12));
+        assertNumEquals(0.6994, tripleEma.getValue(13));
+        assertNumEquals(0.6876, tripleEma.getValue(14));
     }
 }

@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,50 +23,56 @@
  */
 package org.ta4j.core.indicators.pivotpoints;
 
-import org.ta4j.core.Decimal;
-import org.ta4j.core.Tick;
+import org.ta4j.core.Bar;
 import org.ta4j.core.indicators.RecursiveCachedIndicator;
+import org.ta4j.core.num.Num;
 
 import java.util.List;
 
+import static org.ta4j.core.num.NaN.NaN;
+
 /**
  * DeMark Reversal Indicator.
- * <p>
- * @author team172011(Simon-Justus Wimmer), 11.10.2017
- * @see <a href="http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:pivot_points">chart_school: pivotpoints</a>
+ *
+ * @see <a href=
+ *      "http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:pivot_points">
+ *      http://stockcharts.com/school/doku.php?id=chart_school:technical_indicators:pivot_points</a>
  */
-public class DeMarkReversalIndicator extends RecursiveCachedIndicator<Decimal> {
+public class DeMarkReversalIndicator extends RecursiveCachedIndicator<Num> {
 
     private final DeMarkPivotPointIndicator pivotPointIndicator;
     private final DeMarkPivotLevel level;
+    private final Num two;
 
-    public enum DeMarkPivotLevel{
-        RESISTANCE,
-        SUPPORT,
+    public enum DeMarkPivotLevel {
+        RESISTANCE, SUPPORT,
     }
 
     /**
      * Constructor.
-     * <p>
+     *
      * Calculates the DeMark reversal for the corresponding pivot level
-     * @param pivotPointIndicator the {@link DeMarkPivotPointIndicator} for this reversal
-     * @param level the {@link DeMarkPivotLevel} for this reversal (RESISTANT, SUPPORT)
+     * 
+     * @param pivotPointIndicator the {@link DeMarkPivotPointIndicator} for this
+     *                            reversal
+     * @param level               the {@link DeMarkPivotLevel} for this reversal
+     *                            (RESISTANT, SUPPORT)
      */
     public DeMarkReversalIndicator(DeMarkPivotPointIndicator pivotPointIndicator, DeMarkPivotLevel level) {
         super(pivotPointIndicator);
         this.pivotPointIndicator = pivotPointIndicator;
-        this.level =level;
+        this.level = level;
+        this.two = numOf(2);
     }
 
     @Override
-    protected Decimal calculate(int index) {
-        Decimal x = pivotPointIndicator.getValue(index).multipliedBy(Decimal.valueOf(4));
-        Decimal result;
+    protected Num calculate(int index) {
+        Num x = pivotPointIndicator.getValue(index).multipliedBy(numOf(4));
+        Num result;
 
-        if(level == DeMarkPivotLevel.SUPPORT){
+        if (level == DeMarkPivotLevel.SUPPORT) {
             result = calculateSupport(x, index);
-        }
-        else{
+        } else {
             result = calculateResistance(x, index);
         }
 
@@ -73,31 +80,31 @@ public class DeMarkReversalIndicator extends RecursiveCachedIndicator<Decimal> {
 
     }
 
-    private Decimal calculateResistance(Decimal x, int index) {
-        List<Integer> ticksOfPreviousPeriod = pivotPointIndicator.getTicksOfPreviousPeriod(index);
-        if (ticksOfPreviousPeriod.isEmpty()){
-            return Decimal.NaN;
+    private Num calculateResistance(Num x, int index) {
+        List<Integer> barsOfPreviousPeriod = pivotPointIndicator.getBarsOfPreviousPeriod(index);
+        if (barsOfPreviousPeriod.isEmpty()) {
+            return NaN;
         }
-        Tick tick = getTimeSeries().getTick(ticksOfPreviousPeriod.get(0));
-        Decimal low = tick.getMinPrice();
-        for(int i: ticksOfPreviousPeriod){
-            low = getTimeSeries().getTick(i).getMinPrice().min(low);
+        Bar bar = getBarSeries().getBar(barsOfPreviousPeriod.get(0));
+        Num low = bar.getLowPrice();
+        for (int i : barsOfPreviousPeriod) {
+            low = getBarSeries().getBar(i).getLowPrice().min(low);
         }
 
-        return x.dividedBy(Decimal.TWO).minus(low);
+        return x.dividedBy(two).minus(low);
     }
 
-    private Decimal calculateSupport(Decimal x, int index){
-       List<Integer> ticksOfPreviousPeriod = pivotPointIndicator.getTicksOfPreviousPeriod(index);
-       if (ticksOfPreviousPeriod.isEmpty()) {
-           return Decimal.NaN;
-       }
-       Tick tick = getTimeSeries().getTick(ticksOfPreviousPeriod.get(0));
-       Decimal high = tick.getMaxPrice();
-       for(int i: ticksOfPreviousPeriod){
-           high = getTimeSeries().getTick(i).getMaxPrice().max(high);
-       }
+    private Num calculateSupport(Num x, int index) {
+        List<Integer> barsOfPreviousPeriod = pivotPointIndicator.getBarsOfPreviousPeriod(index);
+        if (barsOfPreviousPeriod.isEmpty()) {
+            return NaN;
+        }
+        Bar bar = getBarSeries().getBar(barsOfPreviousPeriod.get(0));
+        Num high = bar.getHighPrice();
+        for (int i : barsOfPreviousPeriod) {
+            high = getBarSeries().getBar(i).getHighPrice().max(high);
+        }
 
-       return x.dividedBy(Decimal.TWO).minus(high);
-   }
+        return x.dividedBy(two).minus(high);
+    }
 }

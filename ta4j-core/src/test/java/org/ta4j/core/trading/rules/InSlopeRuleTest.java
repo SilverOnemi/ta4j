@@ -1,7 +1,8 @@
 /**
  * The MIT License (MIT)
  *
- * Copyright (c) 2014-2017 Marc de Verdelhan & respective authors (see AUTHORS)
+ * Copyright (c) 2014-2017 Marc de Verdelhan, 2017-2019 Ta4j Organization & respective
+ * authors (see AUTHORS)
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -24,33 +25,35 @@ package org.ta4j.core.trading.rules;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ta4j.core.Decimal;
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.BaseBarSeries;
 import org.ta4j.core.Indicator;
 import org.ta4j.core.indicators.helpers.FixedDecimalIndicator;
+import org.ta4j.core.num.Num;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class InSlopeRuleTest {
 
-    private Indicator<Decimal> indicator;
     private InSlopeRule rulePositiveSlope;
     private InSlopeRule ruleNegativeSlope;
-    
+
     @Before
     public void setUp() {
-        indicator = new FixedDecimalIndicator(50, 70, 80, 90, 99, 60, 30, 20, 10, 0);
-        rulePositiveSlope = new InSlopeRule(indicator, Decimal.valueOf(20), Decimal.valueOf(30));
-        ruleNegativeSlope = new InSlopeRule(indicator, Decimal.valueOf(-40), Decimal.valueOf(-20));
+        BarSeries series = new BaseBarSeries();
+        Indicator<Num> indicator = new FixedDecimalIndicator(series, 50, 70, 80, 90, 99, 60, 30, 20, 10, 0);
+        rulePositiveSlope = new InSlopeRule(indicator, series.numOf(20), series.numOf(30));
+        ruleNegativeSlope = new InSlopeRule(indicator, series.numOf(-40), series.numOf(-20));
     }
-    
+
     @Test
     public void isSatisfied() {
         assertFalse(rulePositiveSlope.isSatisfied(0));
         assertTrue(rulePositiveSlope.isSatisfied(1));
         assertFalse(rulePositiveSlope.isSatisfied(2));
         assertFalse(rulePositiveSlope.isSatisfied(9));
-        
+
         assertFalse(ruleNegativeSlope.isSatisfied(0));
         assertFalse(ruleNegativeSlope.isSatisfied(1));
         assertTrue(ruleNegativeSlope.isSatisfied(5));
